@@ -1,6 +1,5 @@
-
  /* 
- * Payload Decoder LoRa Alliance
+ * Payload Decoder LoRa Alliance for ORIGIN, ORIGIN+, GUARD, GUARD+
  * Copyright 2025 Nexelec
  */
 

@@ -1,5 +1,5 @@
 /* 
- * Payload Decoder LoRa Alliance
+ * Payload Decoder LoRa Alliance for AIR,AIR+
  * Copyright 2025 Nexelec
  */
 
