@@ -1,8 +1,9 @@
  /* 
- * Payload Decoder LoRa Alliance for SIGN, WAVE, RISE, FEEL, MOVE, ECHO, VIEW
+ * Payload Decoder LoRa Alliance for SIGN (X565), WAVE (X530), RISE (X520), FEEL (X580), MOVE (X590), ECHO (X570), VIEW (X575)
  * Copyright 2025 Nexelec
+ * Version : 1.0.0
  */
-
+////////////////////////
 function decodeUplink(input) 
 {
     var stringHex = bytesString(input.bytes);
