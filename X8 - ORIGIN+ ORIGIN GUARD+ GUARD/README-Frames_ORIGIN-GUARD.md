@@ -1,15 +1,12 @@
 
 # ORIGIN / ORIGIN+ / GUARD / GUARD+ — Frame Decoding Reference (Uplink 0x00–0x05)
 
-> Version: 2025-11-06 • Status: Draft • Language: English (technical)
-
 This document details the **byte-level decoding** of all uplink messages (LoRaWAN & Sigfox) for ORIGIN, ORIGIN+, GUARD, and GUARD+ devices.
 
 ---
 
 ## 1. Conventions
-- Byte order: big-endian
-- Signed values: two’s complement
+
 - Temperature encoding: 0 → -30°C, 300 → 0°C, 1000 → 70°C (scale = 0.1°C, offset = -30°C)
 - Humidity encoding: linear, 0.5%RH step, 0–200 = 0–100%RH
 - Product Type codes:

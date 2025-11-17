@@ -8,7 +8,6 @@ It covers message types 0x00 through 0x04, as defined in the D976A technical gui
 
 ## 1. Conventions
 
-- Byte order: Big-endian  
 - Product type codes: **AIR+ = 0xAE**, **AIR = 0xAF**  
 - Temperature encoding: 0 = -30°C, 300 = 0°C, 1000 = 70°C (0.1°C step)  
 - Humidity encoding: 0–200 = 0–100%RH (0.5%RH per step)  

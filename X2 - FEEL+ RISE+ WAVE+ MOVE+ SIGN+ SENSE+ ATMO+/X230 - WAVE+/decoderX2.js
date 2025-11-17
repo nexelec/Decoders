@@ -273,37 +273,37 @@ function decodeUplink(input)
 
     function sensorActivation(octetSensorActivate)
     {
-        if(octetSensorActivate===0){return "desactivated"}
-        else if(octetSensorActivate===1){return "activated" };
+        if(octetSensorActivate===0){return "off"}
+        else if(octetSensorActivate===1){return "on" };
     }
 
     function sdActivation(octetSDActivate)
     {
-        if(octetSDActivate===0){return "desactivated"}
-        else if(octetSDActivate===1){return "activated"};
+        if(octetSDActivate===0){return "off"}
+        else if(octetSDActivate===1){return "on"};
     }
 
     function calibrationActivation(octetCalibrationActivate)
     {
-        if(octetCalibrationActivate===0){return "desactivated"}
-        else if(octetCalibrationActivate===1){return "activated"};
+        if(octetCalibrationActivate===0){return "off"}
+        else if(octetCalibrationActivate===1){return "on"};
     }
 
     function active(octetActive)
     {
-        if(octetActive===0){return "desactivated"}
-        else if(octetActive===1){return "activated "};
+        if(octetActive===0){return "off"}
+        else if(octetActive===1){return "on "};
     }
 
     function notificationByLEDandBuzzer(octetNotification)
     {
-        if(octetNotification===0){return "CO2"}
-        else if(octetNotification===1){return "IziAir"};
+        if(octetNotification===0){return "co2"}
+        else if(octetNotification===1){return "iziair"};
     }
 
     function loraRegion(octetLoRaRegion)
     {
-        var message_name =["XXX","lr-eu868","lr-us915","lr-as923","lr-au915","lr-kr920","lr-in865","lr-ru864"]
+        var message_name =["XXX","lorawan-eu868","lorawan-us915","lorawan-as923","lorawan-au915","lorawan-kr920","lorawan-in865","lorawan-ru864"]
         return message_name[octetLoRaRegion]
     }
 
@@ -350,20 +350,20 @@ function decodeUplink(input)
 
     function screenLanguage(octetLanguage)
     {
-        var message_name =["Reserved","french","english","spanish","german","italian"]
+        var message_name =["Reserved","fr","en","es","de","it"]
         return message_name[octetLanguage]
     }
 
     function activatedScreen(octetScreen)
     {
-        var message_name =["desactivated","1 measure","2 measures","3 measures","4 measures","5 measures",
-            "6 measures","7 measures","air quality","diagnostic"]
+        var message_name =["desactivated","measure_1","measure_2","measure_3","measure_4","measure_5",
+            "measure_6","measure_7","air_quality1","diagnostic"]
         return message_name[octetScreen]
     }
 
     function priorityPolluant(octetPriority)
     {
-        var message_name =["no polluant","temperature","humidity","co2","voc","pm1",
+        var message_name =["none","temperature","humidity","co2","voc","pm1",
             "pm2.5","pm10","formaldehyde"]
         return message_name[octetPriority]
     }
@@ -614,11 +614,11 @@ function decodeUplink(input)
         "powerSource":powerSource(data_power_source),
         "batteryVoltage":batteryVoltage(data_battery_voltage),
         "batteryLevel":batterieLevelArgument(data_battery_level),
-        "productStatus":productHwStatusArgument(data_hw_status),
+        "statusProduct":productHwStatusArgument(data_hw_status),
         "statusSdCard":sdStatusArgument(data_hw_status_SD),
         "statusScreen":screenStatusArgument(data_hw_status_screen),
-        "activationTime":productActivationTimeCounter(data_activation_time),
-        "co2LastCalibrationTime": {"value":data_co2_last_manual_calibration_time,"unit":"days"},
+        "timeActivation":productActivationTimeCounter(data_activation_time),
+        "timeCo2LastCalibration": {"value":data_co2_last_manual_calibration_time,"unit":"days"},
         "lowBatterieThreshold": lowBatterieThreshold(data_low_threshold_batterie),
         "statusAntiTear": antiTearArgument(data_hw_status_anti_tear)
         };
@@ -674,46 +674,45 @@ function decodeUplink(input)
         "typeOfMessage": typeOfMessage(octetTypeMessage),
         "reconfigurationSource": reconfigurationSource(data_config_source), 
         "reconfigurationStatus": reconfigurationState(data_config_status),
-        "measurePeriod": period(data_periode_mesure),
-        "co2Enable":sensorActivation(data_sensor_on_off_co2),
-        "vocEnable":sensorActivation(data_sensor_on_off_cov),
-        "pmEnable":sensorActivation(data_sensor_on_off_pm),
-        "formaldehydeEnable":sensorActivation(data_sensor_on_off_formaldehyde),
-        "motionEnable":sensorActivation(data_sensor_on_off_pir),
-        "microphoneEnable":sensorActivation(data_sensor_on_off_microphone),
-        "sdEnable":sdActivation(data_sd_storage_on_off),
-        "automaticCo2CalibrationEnable": calibrationActivation(data_co2_auto_calibration),
-        "co2MediumLevel":co2Threshold(data_co2_medium_level),
-        "co2HighLevel":co2Threshold(data_co2_high_level),
-        "ledCo2Enable":active(data_led_on_off),
-        "ledMediumLevelEnable":active(data_led_orange_on_off),
-        "buzzerEnable":active(data_buzzer_on_off),
-        "buzzerConfirmationEnable":active(data_buzzer_confirm_on_off),
-        "ledSourceNotification":notificationByLEDandBuzzer(data_led_source),
-        "buttonPressNotificationEnable":active(data_button_on_off),
+        "periodMeasure": period(data_periode_mesure),
+        "enableCo2":sensorActivation(data_sensor_on_off_co2),
+        "enableVoc":sensorActivation(data_sensor_on_off_cov),
+        "enablePm":sensorActivation(data_sensor_on_off_pm),
+        "enableFormaldehyde":sensorActivation(data_sensor_on_off_formaldehyde),
+        "enableMotion":sensorActivation(data_sensor_on_off_pir),
+        "enableMicrophone":sensorActivation(data_sensor_on_off_microphone),
+        "enableSd":sdActivation(data_sd_storage_on_off),
+        "enableAutomaticCo2Calibration": calibrationActivation(data_co2_auto_calibration),
+        "thresholdCo2Medium":co2Threshold(data_co2_medium_level),
+        "thresholdCo2High":co2Threshold(data_co2_high_level),
+        "enableLedCo2":active(data_led_on_off),
+        "enableLedMediumLevel":active(data_led_orange_on_off),
+        "enableBuzzer":active(data_buzzer_on_off),
+        "enableBuzzerConfirmation":active(data_buzzer_confirm_on_off),
+        "sourceLedNotification":notificationByLEDandBuzzer(data_led_source),
+        "enableButtonPressNotification":active(data_button_on_off),
         "protocalAndRegion":loraRegion(data_lora_region),
-        "periodicDataEnable":active(data_periodic_tx_on_off),
-        "periodicTransmissionPeriod":period(data_periodic_tx_period),
+        "enablePeriodicData":active(data_periodic_tx_on_off),
+        "periodPeriodicTransmission":period(data_periodic_tx_period),
         "deltaCo2":deltaCO2(data_periodic_delta_co2),
         "deltaTemperature": deltaTemp(data_periodic_delta_temp),
-        "datalogCo2Enable":active(data_datalog_co2_on_off),
-        "datalogTemperatureEnable":active(data_datalog_temperature_on_off),
-        "datalogHumidityEnable":active(data_datalog_humidity_on_off),
-        "datalogNewMeasure":data_datalog_new_measure,
-        "datalogRedundancyMeasure":data_datalog_repetition,
-        "datalogTransmissionPeriod":transmissionPeriodHistorical(data_datalog_tx_period),
-        "roomPresenceEnable":active(data_presence_alerte_on_off),
+        "enableDatalogCo2":active(data_datalog_co2_on_off),
+        "enableDatalogTemperature":active(data_datalog_temperature_on_off),
+        "enableDatalogHumidity":active(data_datalog_humidity_on_off),
+        "datalogNewValues":data_datalog_new_measure,
+        "datalogRepeatValues":data_datalog_repetition,
+        "periodDatalogTransmission":transmissionPeriodHistorical(data_datalog_tx_period),
+        "enableRoomPresence":active(data_presence_alerte_on_off),
         "periodWithoutMotion":period(data_period_without_presence_alerte),
         "pendingJoin": pendingJoin(data_pending_join),
-        "nfcStatus": nfcStatus(data_nfc_status),
-        "productDateYear": {"value":data_date_produit_annee,"unit":"year"},
-        "productDateMonth": {"value":data_date_produit_mois,"unit":"month"},
-        "productDateDay": {"value":data_date_produit_jour,"unit":"day"},
-        "productDateHour": {"value":data_date_produit_heure,"unit":"hours"},
-        "productDateMinute": {"value":data_date_produit_minute,"unit":"minutes"},
+        "enableNfcDiscover": nfcStatus(data_nfc_status),
+        "dateYear": {"value":data_date_produit_annee,"unit":"year"},
+        "dateMonth": {"value":data_date_produit_mois,"unit":"month"},
+        "dateDay": {"value":data_date_produit_jour,"unit":"day"},
+        "dateHour": {"value":data_date_produit_heure,"unit":"hours"},
+        "dateMinute": {"value":data_date_produit_minute,"unit":"minutes"},
         "downlinkFunction" : data_downlink_fnct
         };
-
         return data;
     }
 
@@ -745,26 +744,25 @@ function decodeUplink(input)
        "typeOfMessage": typeOfMessage(octetTypeMessage),
        "reconfigurationSource": reconfigurationSource(data_config_source),
        "reconfigurationStatus": reconfigurationState(data_config_status),
-       "screenEnable":active(data_screen_on_off),
-       "screenLanguage": screenLanguage(data_screen_language),
-       "temperatureUnit": temperatureUnit(data_temperature_unit),
-       "startupScreen": activatedScreen(data_main_screen),
-       "screenAfterOnePress" : activatedScreen(data_screen_after_one_push),
-       "screenAfterTwoPress" : activatedScreen(data_screen_after_two_push),
-       "screenAfterThreePress" : activatedScreen(data_screen_after_three_push),
-       "screenAfterFourPress" : activatedScreen(data_screen_after_four_push),
-       "screenAfterFivePress" : activatedScreen(data_screen_after_five_push),
-       "measureScreenFirstPolluant":priorityPolluant(data_first_polluant),
-       "measureScreenSecondPolluant":priorityPolluant(data_second_polluant),
-       "measureScreenThirdPolluant":priorityPolluant(data_third_polluant),
-       "measureScreenFourthPolluant":priorityPolluant(data_fourth_polluant),
-       "measureScreenFifthPolluant":priorityPolluant(data_fifth_polluant),
-       "measureScreenSixthPolluant":priorityPolluant(data_sixth_polluant),
-       "measureScreenSeventhPolluant":priorityPolluant(data_seventh_polluant),
-       "refreshPeriod":period(data_refreshing_period),
+       "enableDisplay":active(data_screen_on_off),
+       "displayLanguage": screenLanguage(data_screen_language),
+       "unitTemperature": temperatureUnit(data_temperature_unit),
+       "screenIndex1": activatedScreen(data_main_screen),
+       "screenIndex2" : activatedScreen(data_screen_after_one_push),
+       "screenIndex3" : activatedScreen(data_screen_after_two_push),
+       "screenIndex4" : activatedScreen(data_screen_after_three_push),
+       "screenIndex5" : activatedScreen(data_screen_after_four_push),
+       "screenIndex6" : activatedScreen(data_screen_after_five_push),
+       "priorityMeasure1":priorityPolluant(data_first_polluant),
+       "priorityMeasure2":priorityPolluant(data_second_polluant),
+       "priorityMeasure3":priorityPolluant(data_third_polluant),
+       "priorityMeasure4":priorityPolluant(data_fourth_polluant),
+       "priorityMeasure5":priorityPolluant(data_fifth_polluant),
+       "priorityMeasure6":priorityPolluant(data_sixth_polluant),
+       "priorityMeasure7":priorityPolluant(data_seventh_polluant),
+       "periodDisplayRefresh":period(data_refreshing_period),
        "downlinkFunction" : data_downlink_fnct
        }
-
        return data;
     }
 

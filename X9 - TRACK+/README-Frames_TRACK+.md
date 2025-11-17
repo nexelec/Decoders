@@ -8,7 +8,6 @@ This document details the **uplink frame structures** of TRACK+ for LoRaWAN oper
 ## 1. Conventions
 
 - Product type: **0xB5 (TRACK+)**  
-- Byte order: Big-endian  
 - Units and scales as specified per field  
 - All messages transmitted on FPort 56
 
