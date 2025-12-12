@@ -1,7 +1,7 @@
 /* 
  * Payload Decoder LoRa Alliance for ORIGIN+ (X870), ORIGIN (X865), GUARD+ (X860), GUARD (X855)
  * Copyright 2025 Nexelec
- * Version : 1.0.0
+ * Version : 1.0.1
  */
 
 function decodeUplink(input) 
@@ -31,7 +31,7 @@ function decodeUplink(input)
     
     function dataOutput(octetTypeMessage)
     {
-        outputTypeMessage=[productStatusDataOutput(stringHex),productConfigurationDataOutput(stringHex),smokeAlarmDataOutput(stringHex),dailyAirDataOutput(stringHex)]
+        outputTypeMessage=[productStatusDataOutput(stringHex),productConfigurationDataOutput(stringHex),smokeAlarmDataOutput(stringHex),dailyAirDataOutput(stringHex),periodicDataOutput(stringHex),temperatureHistoricalDataOutput(stringHex)]
         return outputTypeMessage[octetTypeMessage]
     }
 
@@ -46,7 +46,7 @@ function decodeUplink(input)
     
     function typeOfMessage(octetTypeMessage)
     {
-        var message_name =["Product Status","Product Configuration","Smoke Alarm","Air Quality"]
+        var message_name =["Product Status","Product Configuration","Smoke Alarm","Air Quality","Periodic Data","Historical Data"]
         return message_name[octetTypeMessage]
     }
 
@@ -183,7 +183,7 @@ function decodeUplink(input)
     }
 
     ///////////////////////////////////////////////////////////////////////
-    /////// Real Time Message Function
+    /////// Periodic Message Function
     ///////////////////////////////////////////////////////////////////////
     
     function temperature(octetTemperature)
@@ -197,6 +197,30 @@ function decodeUplink(input)
     {
         if(octetHumidity == 255){return "Error"}
         else{ return{"value":(octetHumidity*0.5),"unit":"%RH"}}
+    }
+
+
+    ////////////////////////////////////////////////////////////////////
+    /////// HexToBinary
+    ///////////////////////////////////////////////////////////////////
+    function hexToBinary(encoded) {
+        var string_bin = "";
+        var string_bin_elements = "";
+        var i;
+        var j;
+
+        for (i = 0; i < encoded.length; i++) {
+            string_bin_elements = encoded.charAt(i);
+            string_bin_elements = parseInt(string_bin_elements, 16).toString(2);
+            if (string_bin_elements.length < 4) {
+                var nb_zeros = 4 - string_bin_elements.length;
+                for (j = 0; j < nb_zeros; j++) {
+                    string_bin_elements = "0" + string_bin_elements;
+                }
+            }
+            string_bin = string_bin + string_bin_elements;
+        }
+        return string_bin;
     }
     
     //////////////////////////////////////////////////////////////////////
@@ -302,6 +326,60 @@ function decodeUplink(input)
         "humidityAvg":humidity(data_hum_avg),
         }
         return data;
+    }
+
+    function periodicDataOutput(stringHex)
+    {
+        var data_temp = (parseInt(stringHex.substring(4,7),16)>>2)&0x3FF;
+        var data_hum = (parseInt(stringHex.substring(6,9),16)>>2)&0xFF;
+
+        data = {"typeOfProduct": typeOfProduct(octetTypeProduit),
+        "typeOfMessage": typeOfMessage(octetTypeMessage),
+        "temperature":temperature(data_temp),
+        "humidity":humidity(data_hum),
+        }
+
+        return data;
+    }
+
+    function temperatureHistoricalDataOutput(stringHex)
+    {
+        var mesure = [];
+        var mesure_array=[]
+        
+        var i = 0;
+        var offset_octet = 0;
+
+        var data_nombre_mesures = (parseInt(stringHex.substring(4,6),16)>>2)&0x3F;
+        var data_time_between_measurement_min = ((parseInt(stringHex.substring(5,8),16)>>2)&0xFF);
+        var data_repetition = (parseInt(stringHex.substring(7,9),16))&0x3F;
+        var binary=hexToBinary(stringHex)
+
+        for(i=0;i<data_nombre_mesures;i++){
+
+            offset_binaire = 36 + (10*i);
+
+            mesure[i]= parseInt(binary.substring(offset_binaire,offset_binaire+10),2);  
+
+            if(mesure[i] === 0x3FF){mesure[i] = 0;}
+            else{
+                
+                mesure[i] = parseFloat(((mesure[i]/10)-30).toFixed(1))
+                
+            }
+
+        }
+       
+        data={ "typeOfProduct": typeOfProduct(octetTypeProduit),
+        "typeOfMessage": typeOfMessage(octetTypeMessage),
+        "datalogNewMeasure": data_nombre_mesures,
+        "transmissionIntervalDatalog":data_time_between_measurement_min,
+        "datalogMeasureRepetition":data_repetition,
+        "temperature":mesure,
+        } 
+
+        return data
+
     }
         
 } // end of decoder
