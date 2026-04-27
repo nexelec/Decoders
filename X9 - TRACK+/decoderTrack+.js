@@ -370,7 +370,7 @@ function decodeUplink(input)
                 
                 case CHANNEL_NO2:
                     let data_no2 = (parseInt(stringHex.substring(i+2,i+6),16)) & 0xFFFF;
-                    data.no2=ozone(data_no2)
+                    data.no2=no2(data_no2)
                     break;
     
             }
