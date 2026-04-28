@@ -183,6 +183,7 @@ function decodeUplink(input) {
       function protocolAndRegion(octetRegion)
     {
        if (octetRegion == 1) { return "LR-EU868" } 
+       else{return "reserved"}
     }
 
       function timeZone(octetTime)
@@ -350,7 +351,7 @@ function decodeUplink(input) {
         var data_join_scheduled = (parseInt(stringHex.substring(26, 27), 16))& 0x1;
         var data_nfc_status = (parseInt(stringHex.substring(27, 28), 16)>>2)& 0x1F;
         var data_kp = (parseInt(stringHex.substring(27, 30), 16)>>3)& 0x7F;
-        var data_ki = (parseInt(stringHex.substring(29, 31), 16)>>3)& 0x7F;
+        var data_ki = (parseInt(stringHex.substring(29, 31), 16))& 0x7F;
         var data_heating_period = (parseInt(stringHex.substring(31, 32), 16)>>3)& 0x1;
         var data_heating_start_month = (parseInt(stringHex.substring(31, 33), 16)>>3)& 0xF;
         var data_heating_start_day = (parseInt(stringHex.substring(32, 34), 16)>>2)& 0x1F;
