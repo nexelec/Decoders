@@ -1,7 +1,7 @@
 /* 
 * Payload Decoder LoRa Alliance for FLOW(A300LS) & FLOW+(A310LS)
 * Copyright 2026 Nexelec
-* Version : 1.0.0
+* Version : 1.0.1
 */
 
 function decodeUplink(input) {
@@ -351,13 +351,14 @@ function decodeUplink(input) {
         var data_nfc_status = (parseInt(stringHex.substring(27, 28), 16)>>2)& 0x1F;
         var data_kp = (parseInt(stringHex.substring(27, 30), 16)>>3)& 0x7F;
         var data_ki = (parseInt(stringHex.substring(29, 31), 16)>>3)& 0x7F;
-        var data_planning = (parseInt(stringHex.substring(31, 32), 16)>>3)& 0x1;
+        var data_heating_period = (parseInt(stringHex.substring(31, 32), 16)>>3)& 0x1;
         var data_heating_start_month = (parseInt(stringHex.substring(31, 33), 16)>>3)& 0xF;
         var data_heating_start_day = (parseInt(stringHex.substring(32, 34), 16)>>2)& 0x1F;
         var data_heating_end_month = (parseInt(stringHex.substring(33, 35), 16)>>2)& 0xF;
         var data_heating_end_day = (parseInt(stringHex.substring(34, 36), 16)>>1)& 0x1F;
-        var data_daily_planning = (parseInt(stringHex.substring(35, 40), 16)>>1)& 0xFFFF;
-        var data_downling_counter = (parseInt(stringHex.substring(39, 44), 16)>>1)& 0xFFFF;
+        var data_planning = (parseInt(stringHex.substring(35, 36), 16))& 0x01; 
+        var data_daily_planning = (parseInt(stringHex.substring(36, 40), 16)>>1)& 0xFFFF;
+        var data_downling_counter = (parseInt(stringHex.substring(40, 44), 16)>>1)& 0xFFFF;
 
         
         let data = {
@@ -389,11 +390,12 @@ function decodeUplink(input) {
             "enableNfcDiscover" : onOff(data_nfc_status),
             "kp":data_kp,
             "ki":data_ki,
-            "enablePlanningMode":onOff(data_planning),
+            "enableHeatingPeriod":onOff(data_heating_period),
             "heatingStartMonth": data_heating_start_month,
             "heatingStartDay": data_heating_start_day,
             "heatingEndMonth": data_heating_end_month,
             "heatingEndDay":data_heating_end_day,
+            "enablePlanningMode":onOff(data_planning),
             "dailyPlanning":decodeWeeklySchedule(data_daily_planning),
             "downlinkFcnt":data_downling_counter,
 
