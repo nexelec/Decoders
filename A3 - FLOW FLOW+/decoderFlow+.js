@@ -1,7 +1,7 @@
 /* 
-* Payload Decoder LoRa Alliance for FLOW(A300LS) & FLOW+(A310LS)
+* Payload Decoder LoRa Alliance for FLOW CORE & FLOW PRO
 * Copyright 2026 Nexelec
-* Version : 1.0.1
+* Version : 1.0.5
 */
 
 function decodeUplink(input) {
@@ -12,7 +12,7 @@ function decodeUplink(input) {
     var octetTypeMessage = parseInt(stringHex.substring(2, 3), 16);
     var octetVersionMessage = parseInt(stringHex.substring(3, 4), 16);
 
-    var data = dataOutput(octetTypeMessage)
+    var data = dataOutput(octetTypeMessage, octetVersionMessage)
     return { data }
 
     function bytesString(input) {
@@ -28,8 +28,8 @@ function decodeUplink(input) {
     }
 
 
-    function dataOutput(octetTypeMessage) {
-        var outputTypeMessage = ["Reserved", periodicOutput(stringHex), productStatusOutput(stringHex), externalProbeStatusOutput(stringHex), productConfigurationOutput(stringHex), dailyProfil1Output(stringHex), dailyProfil2Output(stringHex),dailyProfil3Output(stringHex)]
+    function dataOutput(octetTypeMessage, octetVersionMessage) {
+        var outputTypeMessage = ["Reserved", periodicOutput(stringHex, octetVersionMessage), productStatusOutput(stringHex, octetVersionMessage), externalProbeStatusOutput(stringHex, octetVersionMessage), productConfigurationOutput(stringHex, octetVersionMessage), dailyProfil1Output(stringHex, octetVersionMessage), dailyProfil2Output(stringHex, octetVersionMessage), dailyProfil3Output(stringHex, octetVersionMessage)]
         return outputTypeMessage[octetTypeMessage]
     }
 
@@ -39,7 +39,7 @@ function decodeUplink(input) {
     }
 
     function typeOfMessage(octetTypeMessage) {
-        var message_name = ["Reserved", "Periodic", "Product Status", "External Probe Status","Product Configuration" ,"Daily profil n°1", "Daily profil n°2","Daily profil n°3"]
+        var message_name = ["Reserved", "Periodic", "Product Status", "External Probe Status", "Product Configuration", "Daily profil n°1", "Daily profil n°2", "Daily profil n°3"]
 
         return message_name[octetTypeMessage]
     }
@@ -59,24 +59,27 @@ function decodeUplink(input) {
         return data[octetTrue];
     }
 
-    function period(octetPeriod) {
-        return { "value": parseFloat(octetPeriod), "unit": "min" }
+    function offOn(octetOn)
+    {
+        data = ["on","off"];
+        return data[octetOn];
     }
 
-    function distance_µm(octetdistance)
-    {
+    function period(octetPeriod) {
+        return { "value": parseFloat(octetPeriod * 10), "unit": "min" }
+    }
+
+    function distance_µm(octetdistance) {
         return { "value": octetdistance, "unit": "µm" }
     }
 
-    function percentage(octetpercentage)
-    {
+    function percentage(octetpercentage) {
         return { "value": octetpercentage, "unit": "%" }
     }
 
-    function month(octetmonth)
-    {
-        if (octetmonth == 1023) { return "error" }
-        else { return {"value": octetmonth, "unit": "month"}}
+    function month(octetmonth) {
+        if (octetmonth == 1023) { return octetmonth }
+        else { return { "value": octetmonth, "unit": "month" } }
     }
 
     function fctSourceReconfiguration(octetReconfigurationSource) {
@@ -84,6 +87,7 @@ function decodeUplink(input) {
         if (octetReconfigurationSource == 1) { return "downlink" }
         if (octetReconfigurationSource == 2) { return "start-up" }
         if (octetReconfigurationSource == 5) { return "local" }
+        if (octetReconfigurationSource == 6) { return "manual action" }
         else { return "Reserved" }
     }
 
@@ -94,320 +98,467 @@ function decodeUplink(input) {
         else { return "Reserved" }
     }
 
-    function temperature(octetTemperatureValue)
-    {
-        if(octetTemperatureValue>=1023){return "Error"}
-        else{return {"value":((octetTemperatureValue/10)-30), "unit":"°C" }}
+    function temperature(octetTemperatureValue) {
+        if (octetTemperatureValue >= 1023) { return octetTemperatureValue }
+        else { return { "value": ((octetTemperatureValue / 10) - 30), "unit": "°C" } }
     }
 
-    function regulationTemperature(octetTemperatureValue)
-    {
-        if(octetTemperatureValue>=62){return "Error"}
-        else{return {"value":octetTemperatureValue*0.5, "unit":"°C" }}
+    function regulationTemperature(octetTemperatureValue) {
+        if (octetTemperatureValue >= 62) { return octetTemperatureValue }
+        else { return { "value": octetTemperatureValue * 0.5, "unit": "°C" } }
     }
 
-    function sourceRegulationTemperature(octetSource)
-    {
+    function sourceRegulationTemperature(octetSource) {
         if (octetSource == 0) { return "internal" }
         if (octetSource == 1) { return "external node" }
-        if (octetSource == 2) { return "external lorawan" }
+        if (octetSource == 2) { return "reserved" }
     }
 
-    function sourceTemperatureSetPointChange(octetSource)
-    {
+    function sourceTemperatureSetPointChange(octetSource) {
         if (octetSource == 0) { return "none" }
         if (octetSource == 1) { return "planning" }
-        if (octetSource == 2) { return "startup" }
-        if (octetSource == 3) { return "local network" }
-        if (octetSource == 4) { return "button" }
-    }
+        if (octetSource == 2) { return "scroll wheel" }
+        if (octetSource == 3) { return "nfc" }
+        if (octetSource == 4) { return "downlink" }
+        if (octetSource == 5) { return "gradient mode" }
     
-    function statusMotorCalibration(octetSource)
-    {
+    }
+
+    function statusMotorCalibration(octetSource) {
         if (octetSource == 0) { return "calibration done" }
         if (octetSource == 1) { return "calibration failure" }
         if (octetSource == 2) { return "calibration not done, product not on the base" }
         if (octetSource == 3) { return "calibration erase, product remove from the base" }
     }
 
-    function motorDistance(octetMotor)
-    {
-        if(octetMotor>=8191){return "Error"}
-        return {"value":octetMotor, "unit":"µm" }
+    function motorDistance(octetMotor) {
+        if (octetMotor >= 8191) { return octetMotor }
+        return { "value": octetMotor, "unit": "µm" }
     }
 
-    function batteryVoltage(octetbatteryVoltage)
-    {
-        if(octetbatteryVoltage===1023){return "Error"}
-        else if(octetbatteryVoltage === 1021){return "No batteries"}
-        else{return {"value":(octetbatteryVoltage*5), "unit":"mV" }}
+    function batteryVoltage(octetbatteryVoltage) {
+        if (octetbatteryVoltage === 1023) { return octetbatteryVoltage * 5 }
+        else if (octetbatteryVoltage === 1021) { return octetbatteryVoltage * 5 }
+        else { return { "value": (octetbatteryVoltage * 5), "unit": "mV" } }
     }
 
-     function batteryLevel(octetbatteryLevel)
-    {
-        if (octetbatteryLevel == 0) { return "High" }
-        if (octetbatteryLevel == 1) { return "Medium" }
-        if (octetbatteryLevel == 2) { return "Low" }
-        if (octetbatteryLevel == 3) { return "Critical" }
+    function batteryLevel(octetbatteryLevel) {
+        if (octetbatteryLevel == 0) { return "high" }
+        if (octetbatteryLevel == 1) { return "medium" }
+        if (octetbatteryLevel == 2) { return "low" }
+        if (octetbatteryLevel == 3) { return "critical" }
     }
 
-    function antiTearStatus(octetAntiTear)
-    {
+    function antiTearStatus(octetAntiTear) {
         if (octetAntiTear == 0) { return "not detected" }
         if (octetAntiTear == 1) { return "detected" }
         if (octetAntiTear == 2) { return "just removed from the base" }
         if (octetAntiTear == 3) { return "just placed on the base" }
     }
 
-    function networkLevel(octetNetwork)
-    {
-        return {"value":octetNetwork, "unit":"dBm" }
+    function networkLevel(octetNetwork) {
+        return { "value": -octetNetwork, "unit": "dBm" }
     }
 
-    function temperatureRegulation(octetTemp)
-    {
-        if(octetTemp===63){return "Error"}
-         else{return {"value":(octetTemp*0.5), "unit":"°C" }}
+    function temperatureRegulation(octetTemp) {
+        if (octetTemp === 63) { return octetTemp }
+        else { return { "value": (octetTemp * 0.5), "unit": "°C" } }
     }
 
-     function temperatureDrop(octetTemp)
-    {
-        return {"value":(octetTemp*0.1), "unit":"°C/min" }
+    function temperatureDrop(octetTemp) {
+        return { "value": (octetTemp * 0.1), "unit": "°C/min" }
     }
 
-      function temperatureOffset(octetTemp)
-    {
-        return {"value":((octetTemp*0.1)-5), "unit":"°C" }
+    function temperatureOffset(octetTemp) {
+        return { "value": ((octetTemp * 0.1) - 5), "unit": "°C" }
     }
 
-      function protocolAndRegion(octetRegion)
-    {
-       if (octetRegion == 1) { return "LR-EU868" } 
-       else{return "reserved"}
+    function protocolAndRegion(octetRegion) {
+        if (octetRegion == 1) { return "LR-EU868" }
+        else { return "reserved" }
     }
 
-      function timeZone(octetTime)
-    {
+    function timeZone(octetTime) {
         var message_name = [
             "UTC -12", "UTC -11", "UTC -10", "UTC -9", "UTC -8", "UTC -7", "UTC -6",
             "UTC -5", "UTC -4", "UTC -3", "UTC -2", "UTC -1", "UTC", "UTC +1",
             "UTC +2", "UTC +3", "UTC +4", "UTC +5", "UTC +6", "UTC +7", "UTC +8",
             "UTC +9", "UTC +10", "UTC +11", "UTC +12", "UTC +13", "UTC +14"
-          ]
+        ]
         return message_name[octetTime]
     }
-    
-    function decodeWeeklySchedule(decimalValue) 
-    {
-        var days = [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday"
-        ];
 
-        var profiles = {
-            0: "Profil 1",
-            1: "Profil 2",
-            2: "Profil 3"
-        };
+    function temperatureSlotProfile(octetTemperatureProfile) {
+        if (octetTemperatureProfile == 0) { return "frost protect temperature" }
+        if (octetTemperatureProfile == 1) { return "confort temperature" }
+        if (octetTemperatureProfile == 2) { return "eco temperature" }
+        if (octetTemperatureProfile == 3) { return "absent temperature" }
+    }
 
-        var result = {};
+    function profil(octetProfile) {
+        data = ["profil 1", "profil 2", "profil 3"];
+        return data[octetProfile];
+    }
 
-        for (let i = 0; i < days.length; i++) {
-            const shift = 14 - (i * 2);
-            const rawValue = (decimalValue >> shift) & 0b11;
+    function childLockOffline(octetChildLock) {
+        if (octetChildLock == 0) { return "unchanged when offline" }
+        if (octetChildLock == 1) { return "disable when offline " }
+    }
 
-            result[days[i]] = profiles[rawValue] !== undefined
-            ?  profiles[rawValue]
-            : "Valeur invalide";
+    function regulationMode(octetRegulationMode) {
+        if (octetRegulationMode == 0) { return "regulation off" }
+        if (octetRegulationMode == 1) { return "regulation on" }
+        if (octetRegulationMode == 2) { return "confort" }
+        if (octetRegulationMode == 3) { return "eco" }
+        if (octetRegulationMode == 4) { return "frost protection" }
+        if (octetRegulationMode == 5) { return "absent" }
+        if (octetRegulationMode == 6) { return "boost" }
+        if (octetRegulationMode == 7) { return "open window" }
+        if (octetRegulationMode == 8) { return "low batterie" }
+
+    }
+
+
+function minutesToDate(N) {
+    const date = new Date(2026, 0, 1, 0, 0, 0);
+    date.setMinutes(date.getMinutes() + N);
+
+    const jj = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const aaaa = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+
+    return `${jj}/${mm}/${aaaa} ${hh}:${min}`;
+}
+
+    function periodicOutput(stringHex, octetVersionMessage) {
+
+        var data_temperature;
+        var data_regulation_temperature;
+        var data_source_regulation_temperature;
+        var data_internal_temperature;
+        var data_source_temperature_set_point_change;
+        var data_open_window_detection;
+        var data_anti_freeze;
+        var data_motor_position;
+        var data_valve_opening_percentage
+        let data;
+
+        switch (octetVersionMessage) {
+            case 0:
+                node.warn("ancienne version de trame périodique : V0");
+                data_temperature = (parseInt(stringHex.substring(4, 7), 16) >> 2) & 0x3FF;
+                data_regulation_temperature = (parseInt(stringHex.substring(6, 8), 16)) & 0x3F;
+                data_source_regulation_temperature = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x3;
+                data_internal_temperature = (parseInt(stringHex.substring(8, 11), 16)) & 0x3FF;
+                data_source_temperature_set_point_change = (parseInt(stringHex.substring(11, 12), 16) >> 1) & 0x7;
+                data_open_window_detection = (parseInt(stringHex.substring(11, 12), 16)) & 0x1;
+                data_anti_freeze = (parseInt(stringHex.substring(12, 13), 16) >> 3) & 0x1;
+                data_motor_position = (parseInt(stringHex.substring(12, 16), 16) >> 2) & 0x1FFF;
+                data_valve_opening_percentage = (parseInt(stringHex.substring(15, 18), 16) >> 3) & 0x7F;
+
+                data = {
+                    "typeOfProduct": typeOfProduct(octetTypeProduit),
+                    "typeOfMessage": typeOfMessage(octetTypeMessage),
+                    "versionOfMessage": octetVersionMessage,
+                    "temperature": temperature(data_temperature),
+                    "regulationTemperature": regulationTemperature(data_regulation_temperature),
+                    "sourceRegulationTemperature": sourceRegulationTemperature(data_source_regulation_temperature),
+                    "internalTemperature": temperature(data_internal_temperature),
+                    "sourceTemperatureSetPointChange": sourceTemperatureSetPointChange(data_source_temperature_set_point_change),
+                    "isWindowOpenActive": trueFalse(data_open_window_detection),
+                    "isFrostProtectActive": trueFalse(data_anti_freeze),
+                    "motorDistance": motorDistance(data_motor_position),
+                    "valveOpeningPercentage": percentage(data_valve_opening_percentage)
+                };
+                break;
+            case 1:
+                node.warn("nouvelle version de trame périodique : V1");
+                data_temperature = (parseInt(stringHex.substring(4, 7), 16) >> 2) & 0x3FF;
+                data_regulation_temperature = (parseInt(stringHex.substring(6, 8), 16)) & 0x3F;
+                data_source_regulation_temperature = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x3;
+                data_internal_temperature = (parseInt(stringHex.substring(8, 11), 16)) & 0x3FF;
+                data_source_temperature_set_point_change = (parseInt(stringHex.substring(11, 12), 16) >> 1) & 0x7;
+                data_motor_position = (parseInt(stringHex.substring(11, 15), 16)) & 0x1FFF;
+                data_valve_opening_percentage = (parseInt(stringHex.substring(15, 17), 16) >> 1) & 0x7F;
+                var data_regulation_mode = (parseInt(stringHex.substring(16, 18), 16) >> 1) & 0x0F;
+
+                data = {
+                    "typeOfProduct": typeOfProduct(octetTypeProduit),
+                    "typeOfMessage": typeOfMessage(octetTypeMessage),
+                    "versionOfMessage": octetVersionMessage,
+                    "temperature": temperature(data_temperature),
+                    "regulationTemperature": regulationTemperature(data_regulation_temperature),
+                    "sourceRegulationTemperature": sourceRegulationTemperature(data_source_regulation_temperature),
+                    "internalTemperature": temperature(data_internal_temperature),
+                    "sourceTemperatureSetPointChange": sourceTemperatureSetPointChange(data_source_temperature_set_point_change),
+                    "isWindowOpenActive": trueFalse(data_open_window_detection),
+                    "isFrostProtectActive": trueFalse(data_anti_freeze),
+                    "motorDistance": motorDistance(data_motor_position),
+                    "valveOpeningPercentage": percentage(data_valve_opening_percentage),
+                    "regulationMode": regulationMode(data_regulation_mode)
+                };
+                break;
         }
 
-        return result;
-    }
-
-    function temperatureSlotProfile(octetTemperatureProfile)
-    {
-        if (octetTemperatureProfile == 0) { return "Frost protect temperature" }
-        if (octetTemperatureProfile == 1) { return "Confort temperature" }
-        if (octetTemperatureProfile == 2) { return "Eco temperature" }
-        if (octetTemperatureProfile == 3) { return "Absent temperature" }
-    }
-
-    function periodicOutput(stringHex) {
-
-        var data_temperature = (parseInt(stringHex.substring(4, 7), 16) >> 2) & 0x3FF;
-        var data_regulation_temperature = (parseInt(stringHex.substring(6, 8), 16)) & 0x3F;
-        var data_source_regulation_temperature = (parseInt(stringHex.substring(8, 9), 16)>>2) & 0x3;
-        var data_internal_temperature = (parseInt(stringHex.substring(8, 11), 16)) & 0x3FF;
-        var data_source_temperature_set_point_change = (parseInt(stringHex.substring(11, 12), 16)>>1) & 0x7;
-        var data_open_window_detection = (parseInt(stringHex.substring(11, 12), 16)) & 0x1;
-        var data_anti_freeze = (parseInt(stringHex.substring(12, 13), 16)>>3) & 0x1;
-        var data_motor_position = (parseInt(stringHex.substring(12, 16), 16)>>2) & 0x1FFF;
-        var data_valve_opening_percentage = (parseInt(stringHex.substring(15, 18), 16)>>3) & 0x7F;
-
-        let data = {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
-            "temperature" : temperature(data_temperature),
-            "regulationTemperature" : regulationTemperature(data_regulation_temperature),
-            "sourceRegulationTemperature" : sourceRegulationTemperature(data_source_regulation_temperature),
-            "internalTemperature" : temperature(data_internal_temperature),
-            "sourceTemperatureSetPointChange" : sourceTemperatureSetPointChange(data_source_temperature_set_point_change),
-            "isWindowOpenActive" : trueFalse(data_open_window_detection),
-            "isFrostProtectActive" : trueFalse(data_anti_freeze),
-            "motorDistance" : motorDistance(data_motor_position),
-            "valveOpeningPercentage" : percentage(data_valve_opening_percentage)
-        };
         return data;
     }
 
-    function productStatusOutput(stringHex) {
+    function productStatusOutput(stringHex, octetVersionMessage) {
         var data_hardware_version = (parseInt(stringHex.substring(4, 6), 16));
         var data_software_version = (parseInt(stringHex.substring(6, 8), 16));
-        var data_battery_voltage1 = (parseInt(stringHex.substring(8, 11), 16)>>2) & 0x3FF;
+        var data_battery_voltage1 = (parseInt(stringHex.substring(8, 11), 16) >> 2) & 0x3FF;
         var data_battery_voltage2 = (parseInt(stringHex.substring(10, 13), 16)) & 0x3FF;
-        var data_battery_level = (parseInt(stringHex.substring(13, 14), 16)>>2) & 0x3;
-        var data_product_status = (parseInt(stringHex.substring(13, 14), 16)>>1) & 0x1;
-        var data_anti_tear = (parseInt(stringHex.substring(13, 15), 16)>>3) & 0x3;
+        var data_battery_level = (parseInt(stringHex.substring(13, 14), 16) >> 2) & 0x3;
+        var data_product_status = (parseInt(stringHex.substring(13, 14), 16) >> 1) & 0x1;
+        var data_anti_tear = (parseInt(stringHex.substring(13, 15), 16) >> 3) & 0x3;
         var data_motor_calibration_status = (parseInt(stringHex.substring(14, 15), 16)) & 0x7;
-        var data_motor_stroke_distance = (parseInt(stringHex.substring(15, 19), 16)>>3) & 0x1FFF;
-        var data_activation_time = (parseInt(stringHex.substring(18, 21), 16)>>1) & 0x3FF;
-        var data_date_of_product = (parseInt(stringHex.substring(20, 27), 16)>>1) & 0xFFFFFF;
+        var data_motor_stroke_distance = (parseInt(stringHex.substring(15, 19), 16) >> 3) & 0x1FFF;
+        var data_activation_time = (parseInt(stringHex.substring(18, 21), 16) >> 1) & 0x3FF;
+        var data_date_of_product = (parseInt(stringHex.substring(20, 27), 16) >> 1) & 0xFFFFFF;
         var data_interco_with_node = (parseInt(stringHex.substring(26, 27), 16)) & 0x1;
 
         let data = {
             "typeOfProduct": typeOfProduct(octetTypeProduit),
             "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
+            "versionOfMessage": octetVersionMessage,
             "hardwareVersion": data_hardware_version,
             "softwareVersion": data_software_version,
             "batteryVoltageSlot1": batteryVoltage(data_battery_voltage1),
             "batteryVoltageSlot2": batteryVoltage(data_battery_voltage2),
-            "batteryLevel":batteryLevel(data_battery_level),
+            "batteryLevel": batteryLevel(data_battery_level),
             "statusProduct": okError(data_product_status),
             "statusAntiTear": antiTearStatus(data_anti_tear),
             "statusMotorCalibration": statusMotorCalibration(data_motor_calibration_status),
             "motorStrokeDistance": distance_µm(data_motor_stroke_distance),
-            "timeActivation":month(data_activation_time),
-            "productDate" : data_date_of_product,
-            "isD2Dactive": trueFalse(data_interco_with_node)
+            "timeActivation": month(data_activation_time),
+            "productDate": minutesTosDate(data_date_of_product),
+            "isD2Dactive": (data_interco_with_node)
         };
+
+
         return data;
     }
 
-    function externalProbeStatusOutput(stringHex) {
+    function externalProbeStatusOutput(stringHex, octetVersionMessage) {
         var data_d2d_id = (parseInt(stringHex.substring(4, 10), 16)) & 0xFFFFFF;
-        var data_status_external_product = (parseInt(stringHex.substring(10, 11), 16)>>3) & 0x1;
-        var data_anti_tear = (parseInt(stringHex.substring(10, 11), 16)>>1) & 0x3;
-        var data_status_temperature = (parseInt(stringHex.substring(10, 11), 16)) & 0x1;
-        var data_batterie_level= (parseInt(stringHex.substring(11, 12), 16)>>2) & 0x3;
-        var data_batterie_voltage =(parseInt(stringHex.substring(11, 14), 16)) & 0x3FF;
-        var data_node_message_received =(parseInt(stringHex.substring(14, 16), 16)) & 0xFF
-        var data_node_network_level = (parseInt(stringHex.substring(16, 18), 16)) & 0xFF
+        var data_anti_tear = (parseInt(stringHex.substring(10, 11), 16) >> 2) & 0x3;
+        var data_status_temperature = (parseInt(stringHex.substring(10, 11), 16) >> 1) & 0x1;
+        var data_batterie_level = (parseInt(stringHex.substring(10, 12), 16) >> 3) & 0x3;
+        var data_batterie_voltage = (parseInt(stringHex.substring(11, 14), 16) >> 1) & 0x3FF;
+        var data_node_message_received = (parseInt(stringHex.substring(13, 16), 16) >> 1) & 0xFF
+        var data_node_network_level = (parseInt(stringHex.substring(15, 18), 16) >> 1) & 0xFF
 
         let data = {
             "typeOfProduct": typeOfProduct(octetTypeProduit),
             "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
-            "euiExternalProbe" : data_d2d_id,
-            "statusExternalc" : okError(data_status_external_product),
-            "statusExternalProbeAntiTear" : antiTearStatus(data_anti_tear),
-            "statusExternalProbeTemperature" : okError(data_status_temperature),
-            "statusExternalProbeBatteryLevel" : batteryLevel(data_batterie_level),
-            "statusExternalProbeBatteryVoltage" : batteryVoltage(data_batterie_voltage),
+            "versionOfMessage": octetVersionMessage,
+            "euiExternalProbe": data_d2d_id,
+            "statusExternalProbeAntiTear": antiTearStatus(data_anti_tear),
+            "statusExternalProbeTemperature": okError(data_status_temperature),
+            "statusExternalProbeBatteryLevel": batteryLevel(data_batterie_level),
+            "statusExternalProbeBatteryVoltage": batteryVoltage(data_batterie_voltage),
             "ExternalProbeMessageReceived": data_node_message_received,
-            "ExternalProbeNetworkLevel" : networkLevel(data_node_network_level)
+            "ExternalProbeNetworkLevel": networkLevel(data_node_network_level)
         };
         return data;
     }
 
-    function productConfigurationOutput(stringHex) {
-        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16)>>1)&0x7;
-        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16)>>3)&0x3;
-        var data_period_Periodic_Transmission_regulation_on = (parseInt(stringHex.substring(5, 6), 16))&0x7;
-        var data_period_Periodic_Transmission_regulation_off = (parseInt(stringHex.substring(6, 8), 16))&0xFF;
-        var data_child_lock = (parseInt(stringHex.substring(8, 9), 16)>>3)&0x1;
-        var data_child_lock_without_connection = (parseInt(stringHex.substring(8, 9), 16)>>2)&0x1;
-        var data_general_regulation = (parseInt(stringHex.substring(8, 9), 16)>>1)&0x1;
-        var data_regulation_minimal_temp = (parseInt(stringHex.substring(8, 11), 16)>>3)& 0x3F;
-        var data_regulation_maximal_temp = (parseInt(stringHex.substring(10, 12), 16)>>1)& 0x3F;
-        var data_anti_freeze = (parseInt(stringHex.substring(11, 12), 16))& 0x1;
-        var data_anti_freeze_temperature_threshold = (parseInt(stringHex.substring(12, 14), 16)>>2)& 0x3F;
-        var data_open_window_detection=(parseInt(stringHex.substring(13, 14), 16)>>1)& 0x1;
-        var data_open_window_temperature_drop = (parseInt(stringHex.substring(13, 15), 16))& 0x1F;
-        var data_open_window_pause_duration=(parseInt(stringHex.substring(15, 17), 16)>>2)& 0x3F;
-        var data_internal_temperature_offset = (parseInt(stringHex.substring(16, 19), 16)>>3)& 0x7F;
-        var data_temperature_confort_mode = (parseInt(stringHex.substring(18, 20), 16)>>1)& 0x3F;
-        var data_temperature_eco_mode = (parseInt(stringHex.substring(19, 22), 16)>>3)& 0x3F;
-        var data_temperature_absent_mode = (parseInt(stringHex.substring(21, 23), 16)>>1)& 0x3F;
-        var data_low_battery_valve_opening_percent = (parseInt(stringHex.substring(21, 23), 16)>>1)& 0x7F;
-        var data_protocol_and_region = (parseInt(stringHex.substring(24, 26), 16)>>2)& 0xF;
-        var data_time_zone = (parseInt(stringHex.substring(25, 27), 16)>>1)& 0x1F;
-        var data_join_scheduled = (parseInt(stringHex.substring(26, 27), 16))& 0x1;
-        var data_nfc_status = (parseInt(stringHex.substring(27, 28), 16)>>2)& 0x1F;
-        var data_kp = (parseInt(stringHex.substring(27, 30), 16)>>3)& 0x7F;
-        var data_ki = (parseInt(stringHex.substring(29, 31), 16))& 0x7F;
-        var data_heating_period = (parseInt(stringHex.substring(31, 32), 16)>>3)& 0x1;
-        var data_heating_start_month = (parseInt(stringHex.substring(31, 33), 16)>>3)& 0xF;
-        var data_heating_start_day = (parseInt(stringHex.substring(32, 34), 16)>>2)& 0x1F;
-        var data_heating_end_month = (parseInt(stringHex.substring(33, 35), 16)>>2)& 0xF;
-        var data_heating_end_day = (parseInt(stringHex.substring(34, 36), 16)>>1)& 0x1F;
-        var data_planning = (parseInt(stringHex.substring(35, 36), 16))& 0x01; 
-        var data_daily_planning = (parseInt(stringHex.substring(36, 40), 16)>>1)& 0xFFFF;
-        var data_downling_counter = (parseInt(stringHex.substring(40, 44), 16)>>1)& 0xFFFF;
+    function productConfigurationOutput(stringHex, octetVersionMessage) {
 
-        
-        let data = {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
-            "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
-            "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
-            "periodPeriodicTransmissionRegulationOn" : period(data_period_Periodic_Transmission_regulation_on),
-            "periodPeriodicTransmissionRegulationOff" : period(data_period_Periodic_Transmission_regulation_off),
-            "enableChildLock":onOff(data_child_lock),
-            "childLockOfflineBehavior":onOff(data_child_lock_without_connection),
-            "enableRegulation":onOff(data_general_regulation),
-            "minimumRegulationTemperature":temperatureRegulation(data_regulation_minimal_temp),
-            "maximumRegulationTemperature":temperatureRegulation(data_regulation_maximal_temp),
-            "enableFrostProtect":onOff(data_anti_freeze),
-            "frostProtectActivationThreshold":temperatureRegulation(data_anti_freeze_temperature_threshold),
-            "enableOpenWindowDetection":onOff(data_open_window_detection),
-            "openWindowDetectionTemperatureDrop":temperatureDrop(data_open_window_temperature_drop),
-            "openWindowDetectionPauseDuration" : data_open_window_pause_duration,
-            "temperatureInternalOffset":temperatureOffset(data_internal_temperature_offset),
-            "temperatureModeConfort": temperatureRegulation(data_temperature_confort_mode),
-            "temperatureModeEco": temperatureRegulation(data_temperature_eco_mode),
-            "temperatureModeAbsent": temperatureRegulation(data_temperature_absent_mode),
-            "lowBatteryValveOpeningPercent" : percentage(data_low_battery_valve_opening_percent),
-            "protocolAndRegion": protocolAndRegion(data_protocol_and_region),
-            "timeZone": timeZone(data_time_zone),
-            "isJoinPending": trueFalse(data_join_scheduled),
-            "enableNfcDiscover" : onOff(data_nfc_status),
-            "kp":data_kp,
-            "ki":data_ki,
-            "enableHeatingPeriod":onOff(data_heating_period),
-            "heatingStartMonth": data_heating_start_month,
-            "heatingStartDay": data_heating_start_day,
-            "heatingEndMonth": data_heating_end_month,
-            "heatingEndDay":data_heating_end_day,
-            "enablePlanningMode":onOff(data_planning),
-            "dailyPlanning":decodeWeeklySchedule(data_daily_planning),
-            "downlinkFcnt":data_downling_counter,
+    
+        let data = {};
+        console.log("octetVersionMessage:", octetVersionMessage)
+        if (octetVersionMessage == 0) {
+            let data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
+            let data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
+            let data_period_Periodic_Transmission_regulation_on = (parseInt(stringHex.substring(5, 6), 16)) & 0x7;
+            let data_period_Periodic_Transmission_regulation_off = (parseInt(stringHex.substring(6, 8), 16)) & 0xFF;
+            let data_child_lock = (parseInt(stringHex.substring(8, 9), 16) >> 3) & 0x1;
+            let data_child_lock_without_connection = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x1;
+            let data_general_regulation = (parseInt(stringHex.substring(8, 9), 16) >> 1) & 0x1;
+            let data_regulation_minimal_temp = (parseInt(stringHex.substring(8, 11), 16) >> 3) & 0x3F;
+            let data_regulation_maximal_temp = (parseInt(stringHex.substring(10, 12), 16) >> 1) & 0x3F;
+            let data_anti_freeze = (parseInt(stringHex.substring(11, 12), 16)) & 0x1;
+            let data_anti_freeze_temperature_threshold = (parseInt(stringHex.substring(12, 14), 16) >> 2) & 0x3F;
+            let data_open_window_detection = (parseInt(stringHex.substring(13, 14), 16) >> 1) & 0x1;
+            let data_open_window_temperature_drop = (parseInt(stringHex.substring(13, 15), 16)) & 0x1F;
+            let data_open_window_pause_duration = (parseInt(stringHex.substring(15, 17), 16) >> 2) & 0x3F;
+            let data_internal_temperature_offset = (parseInt(stringHex.substring(16, 19), 16) >> 3) & 0x7F;
+            let data_temperature_confort_mode = (parseInt(stringHex.substring(18, 20), 16) >> 1) & 0x3F;
+            let data_temperature_eco_mode = (parseInt(stringHex.substring(19, 22), 16) >> 3) & 0x3F;
+            let data_temperature_absent_mode = (parseInt(stringHex.substring(21, 23), 16) >> 1) & 0x3F;
+            let data_low_battery_valve_opening_percent = (parseInt(stringHex.substring(21, 23), 16) >> 1) & 0x7F;
+            let data_protocol_and_region = (parseInt(stringHex.substring(24, 26), 16) >> 2) & 0xF;
+            let data_time_zone = (parseInt(stringHex.substring(25, 27), 16) >> 1) & 0x1F;
+            let data_join_scheduled = (parseInt(stringHex.substring(26, 27), 16)) & 0x1;
+            let data_nfc_status = (parseInt(stringHex.substring(27, 28), 16) >> 2) & 0x3;
+            let data_kp = (parseInt(stringHex.substring(27, 30), 16) >> 3) & 0x7F;
+            let data_ki = (parseInt(stringHex.substring(29, 31), 16)) & 0x7F;
+            let data_heating_period = (parseInt(stringHex.substring(31, 32), 16) >> 3) & 0x1;
+            let data_heating_start_month = (parseInt(stringHex.substring(31, 33), 16) >> 3) & 0xF;
+            let data_heating_start_day = (parseInt(stringHex.substring(32, 34), 16) >> 2) & 0x1F;
+            let data_heating_end_month = (parseInt(stringHex.substring(33, 35), 16) >> 2) & 0xF;
+            let data_heating_end_day = (parseInt(stringHex.substring(34, 36), 16) >> 1) & 0x1F;
+            let data_planning = (parseInt(stringHex.substring(35, 36), 16)) & 0x01;
+            let data_daily_planning = (parseInt(stringHex.substring(36, 40), 16) >> 1) & 0xFFFF;
+            let data_daily_planning_monday = (parseInt(stringHex.substring(36, 37), 16) >> 2) & 0x03;
+            let data_daily_planning_tuesday = (parseInt(stringHex.substring(36, 37), 16)) & 0x03;
+            let data_daily_planning_wednesday = (parseInt(stringHex.substring(37, 38), 16) >> 2) & 0x03;
+            let data_daily_planning_thursday = (parseInt(stringHex.substring(37, 38), 16)) & 0x03;
+            let data_daily_planning_friday = (parseInt(stringHex.substring(38, 39), 16) >> 2) & 0x03;
+            let data_daily_planning_saturday = (parseInt(stringHex.substring(38, 39), 16)) & 0x03;
+            let data_daily_planning_sunday = (parseInt(stringHex.substring(39, 40), 16) >> 2) & 0x03;
+            let data_downling_counter = (parseInt(stringHex.substring(40, 44), 16) >> 1) & 0xFFFF;
 
-        };
-        return data;
+
+            data = {
+                "typeOfProduct": typeOfProduct(octetTypeProduit),
+                "typeOfMessage": typeOfMessage(octetTypeMessage),
+                "versionOfMessage": octetVersionMessage,
+                "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
+                "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
+                "periodPeriodicTransmissionRegulationOn": period(data_period_Periodic_Transmission_regulation_on),
+                "periodPeriodicTransmissionRegulationOff": period(data_period_Periodic_Transmission_regulation_off),
+                "enableChildLock": onOff(data_child_lock),
+                "childLockOfflineBehavior": childLockOffline(data_child_lock_without_connection),
+                "enableRegulation": onOff(data_general_regulation),
+                "minimumRegulationTemperature": temperatureRegulation(data_regulation_minimal_temp),
+                "maximumRegulationTemperature": temperatureRegulation(data_regulation_maximal_temp),
+                "enableFrostProtect": onOff(data_anti_freeze),
+                "frostProtectActivationThreshold": temperatureRegulation(data_anti_freeze_temperature_threshold),
+                "enableOpenWindowDetection": onOff(data_open_window_detection),
+                "openWindowDetectionTemperatureDrop": temperatureDrop(data_open_window_temperature_drop),
+                "openWindowDetectionPauseDuration": data_open_window_pause_duration,
+                "temperatureInternalOffset": temperatureOffset(data_internal_temperature_offset),
+                "temperatureModeConfort": temperatureRegulation(data_temperature_confort_mode),
+                "temperatureModeEco": temperatureRegulation(data_temperature_eco_mode),
+                "temperatureModeAbsent": temperatureRegulation(data_temperature_absent_mode),
+                "lowBatteryValveOpeningPercent": percentage(data_low_battery_valve_opening_percent),
+                "protocolAndRegion": protocolAndRegion(data_protocol_and_region),
+                "timeZone": timeZone(data_time_zone),
+                "isJoinPending": trueFalse(data_join_scheduled),
+                "enableNfcDiscover": offOn(data_nfc_status),
+                "kp": data_kp,
+                "ki": data_ki,
+                "enableHeatingPeriod": onOff(data_heating_period),
+                "heatingStartMonth": data_heating_start_month,
+                "heatingStartDay": data_heating_start_day,
+                "heatingEndMonth": data_heating_end_month,
+                "heatingEndDay": data_heating_end_day,
+                "enablePlanningMode": onOff(data_planning),
+                "dailyPlanning": {
+                    "monday": profil(data_daily_planning_monday),
+                    "tuesday": profil(data_daily_planning_tuesday),
+                    "wednesday": profil(data_daily_planning_wednesday),
+                    "thursday": profil(data_daily_planning_thursday),
+                    "friday": profil(data_daily_planning_friday),
+                    "saturday": profil(data_daily_planning_saturday),
+                    "sunday": profil(data_daily_planning_sunday),
+                },
+                "downlinkFcnt": data_downling_counter,
+            }
+        }
+
+        if (octetVersionMessage == 1) {
+            let data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
+            let data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
+            let data_period_Periodic_Transmission_regulation_on = (parseInt(stringHex.substring(5, 6), 16)) & 0x7;
+            let data_period_Periodic_Transmission_regulation_off = (parseInt(stringHex.substring(6, 8), 16)) & 0xFF;
+            let data_child_lock = (parseInt(stringHex.substring(8, 9), 16) >> 3) & 0x1;
+            let data_child_lock_without_connection = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x1;
+            let data_general_regulation = (parseInt(stringHex.substring(8, 9), 16) >> 1) & 0x1;
+            let data_regulation_minimal_temp = (parseInt(stringHex.substring(8, 11), 16) >> 3) & 0x3F;
+            let data_regulation_maximal_temp = (parseInt(stringHex.substring(10, 12), 16) >> 1) & 0x3F;
+            let data_anti_freeze = (parseInt(stringHex.substring(11, 12), 16)) & 0x1;
+            let data_anti_freeze_temperature_threshold = (parseInt(stringHex.substring(12, 14), 16) >> 2) & 0x3F;
+            let data_open_window_detection = (parseInt(stringHex.substring(13, 14), 16) >> 1) & 0x1;
+            let data_open_window_temperature_drop = (parseInt(stringHex.substring(13, 15), 16)) & 0x1F;
+            let data_open_window_pause_duration = (parseInt(stringHex.substring(15, 17), 16) >> 2) & 0x3F;
+            let data_internal_temperature_offset = (parseInt(stringHex.substring(16, 19), 16) >> 3) & 0x7F;
+            let data_regulation_tolerance = (parseInt(stringHex.substring(18, 20), 16)) & 0x7F;
+            let data_temperature_confort_mode = (parseInt(stringHex.substring(20, 22), 16) >> 2) & 0x3F;
+            let data_temperature_eco_mode = (parseInt(stringHex.substring(21, 23), 16)) & 0x3F;
+            let data_temperature_absent_mode = (parseInt(stringHex.substring(23, 25), 16) >> 2) & 0x3F;
+            let data_low_battery_valve_opening_percent = (parseInt(stringHex.substring(24, 26), 16) >> 3) & 0x7F;
+            let data_protocol_and_region = (parseInt(stringHex.substring(26, 28), 16) >> 3) & 0xF;
+            let data_time_zone = (parseInt(stringHex.substring(27, 29), 16) >> 2) & 0x1F;
+            let data_join_scheduled = (parseInt(stringHex.substring(28, 29), 16) >> 1) & 0x1;
+            let data_nfc_status = (parseInt(stringHex.substring(28, 30), 16) >> 3) & 0x3;
+            let data_kp = (parseInt(stringHex.substring(29, 31), 16)) & 0x7F;
+            let data_ki = (parseInt(stringHex.substring(31, 33), 16) >> 1) & 0x7F;
+            let data_heating_period = (parseInt(stringHex.substring(32, 33), 16)) & 0x1;
+            let data_heating_start_month = (parseInt(stringHex.substring(33, 34), 16)) & 0xF;
+            let data_heating_start_day = (parseInt(stringHex.substring(34, 35), 16) >> 3) & 0x1F;
+            let data_heating_end_month = (parseInt(stringHex.substring(35, 37), 16) >> 3) & 0xF;
+            let data_heating_end_day = (parseInt(stringHex.substring(36, 38), 16) >> 2) & 0x1F;
+            let data_planning = (parseInt(stringHex.substring(37, 38), 16) >> 1) & 0x01;
+            let data_daily_planning = (parseInt(stringHex.substring(37, 42), 16) >> 1) & 0xFFFF;
+            let data_daily_planning_monday = (parseInt(stringHex.substring(37, 38), 16) >> 3) & 0x03;
+            let data_daily_planning_tuesday = (parseInt(stringHex.substring(38, 39), 16) >> 1) & 0x03;
+            let data_daily_planning_wednesday = (parseInt(stringHex.substring(38, 39), 16) >> 3) & 0x03;
+            let data_daily_planning_thursday = (parseInt(stringHex.substring(39, 40), 16) >> 1) & 0x03;
+            let data_daily_planning_friday = (parseInt(stringHex.substring(39, 40), 16) >> 3) & 0x03;
+            let data_daily_planning_saturday = (parseInt(stringHex.substring(40, 41), 16) >> 1) & 0x03;
+            let data_daily_planning_sunday = (parseInt(stringHex.substring(40, 42), 16) >> 3) & 0x03;
+            let data_downling_counter = (parseInt(stringHex.substring(41, 46), 16) >> 1) & 0xFFFF;
+
+            data = {
+                "typeOfProduct": typeOfProduct(octetTypeProduit),
+                "typeOfMessage": typeOfMessage(octetTypeMessage),
+                "versionOfMessage": octetVersionMessage,
+                "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
+                "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
+                "periodPeriodicTransmissionRegulationOn": period(data_period_Periodic_Transmission_regulation_on),
+                "periodPeriodicTransmissionRegulationOff": period(data_period_Periodic_Transmission_regulation_off),
+                "enableChildLock": onOff(data_child_lock),
+                "childLockOfflineBehavior": childLockOffline(data_child_lock_without_connection),
+                "enableRegulation": onOff(data_general_regulation),
+                "minimumRegulationTemperature": temperatureRegulation(data_regulation_minimal_temp),
+                "maximumRegulationTemperature": temperatureRegulation(data_regulation_maximal_temp),
+                "enableFrostProtect": onOff(data_anti_freeze),
+                "frostProtectActivationThreshold": temperatureRegulation(data_anti_freeze_temperature_threshold),
+                "enableOpenWindowDetection": onOff(data_open_window_detection),
+                "openWindowDetectionTemperatureDrop": temperatureDrop(data_open_window_temperature_drop),
+                "openWindowDetectionPauseDuration": data_open_window_pause_duration,
+                "temperatureInternalOffset": temperatureOffset(data_internal_temperature_offset),
+                "regulationTolerance": temperatureDrop(data_regulation_tolerance),
+                "temperatureModeConfort": temperatureRegulation(data_temperature_confort_mode),
+                "temperatureModeEco": temperatureRegulation(data_temperature_eco_mode),
+                "temperatureModeAbsent": temperatureRegulation(data_temperature_absent_mode),
+                "lowBatteryValveOpeningPercent": percentage(data_low_battery_valve_opening_percent),
+                "protocolAndRegion": protocolAndRegion(data_protocol_and_region),
+                "timeZone": timeZone(data_time_zone),
+                "isJoinPending": trueFalse(data_join_scheduled),
+                "enableNfcDiscover": onOff(data_nfc_status),
+                "kp": data_kp,
+                "ki": data_ki,
+                "enableHeatingPeriod": onOff(data_heating_period),
+                "heatingStartMonth": data_heating_start_month,
+                "heatingStartDay": data_heating_start_day,
+                "heatingEndMonth": data_heating_end_month,
+                "heatingEndDay": data_heating_end_day,
+                "enablePlanningMode": onOff(data_planning),
+                "dailyPlanning": {
+                    "monday": profil(data_daily_planning_monday),
+                    "tuesday": profil(data_daily_planning_tuesday),
+                    "wednesday": profil(data_daily_planning_wednesday),
+                    "thursday": profil(data_daily_planning_thursday),
+                    "friday": profil(data_daily_planning_friday),
+                    "saturday": profil(data_daily_planning_saturday),
+                    "sunday": profil(data_daily_planning_sunday),
+                },
+                "downlinkFcnt": data_downling_counter,
+            };
+        }
+        return data
     }
 
-    function dailyProfil1Output(stringHex) {
+    function dailyProfil1Output(stringHex, octetVersionMessage) {
 
-        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16)>>1)&0x7;
-        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16)>>3)&0x3;
+        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
+        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
 
         var data_slot_00h00_00h30 = (parseInt(stringHex.substring(5, 6), 16) >> 1) & 0x3;
         var data_slot_00h30_01h00 = (parseInt(stringHex.substring(5, 7), 16) >> 3) & 0x3;
@@ -473,7 +624,7 @@ function decodeUplink(input) {
         let data = {
             "typeOfProduct": typeOfProduct(octetTypeProduit),
             "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
+            "versionOfMessage": octetVersionMessage,
             "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
             "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
             "temperatureSlot00h00_00h30": temperatureSlotProfile(data_slot_00h00_00h30),
@@ -528,10 +679,10 @@ function decodeUplink(input) {
         return data;
     }
 
-    function dailyProfil2Output(stringHex) {
+    function dailyProfil2Output(stringHex, octetVersionMessage) {
 
-        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16)>>1)&0x7;
-        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16)>>3)&0x3;
+        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
+        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
 
         var data_slot_00h00_00h30 = (parseInt(stringHex.substring(5, 6), 16) >> 1) & 0x3;
         var data_slot_00h30_01h00 = (parseInt(stringHex.substring(5, 7), 16) >> 3) & 0x3;
@@ -597,7 +748,7 @@ function decodeUplink(input) {
         let data = {
             "typeOfProduct": typeOfProduct(octetTypeProduit),
             "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
+            "versionOfMessage": octetVersionMessage,
             "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
             "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
             "temperatureSlot00h00_00h30": temperatureSlotProfile(data_slot_00h00_00h30),
@@ -652,10 +803,10 @@ function decodeUplink(input) {
         return data;
     }
 
-    function dailyProfil3Output(stringHex) {
+    function dailyProfil3Output(stringHex, octetVersionMessage) {
 
-        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16)>>1)&0x7;
-        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16)>>3)&0x3;
+        var data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
+        var data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
 
         var data_slot_00h00_00h30 = (parseInt(stringHex.substring(5, 6), 16) >> 1) & 0x3;
         var data_slot_00h30_01h00 = (parseInt(stringHex.substring(5, 7), 16) >> 3) & 0x3;
@@ -721,7 +872,7 @@ function decodeUplink(input) {
         let data = {
             "typeOfProduct": typeOfProduct(octetTypeProduit),
             "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage" : octetVersionMessage,
+            "versionOfMessage": octetVersionMessage,
             "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
             "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
             "temperatureSlot00h00_00h30": temperatureSlotProfile(data_slot_00h00_00h30),
@@ -775,5 +926,4 @@ function decodeUplink(input) {
         }
         return data;
     }
-
 } // end of decoder

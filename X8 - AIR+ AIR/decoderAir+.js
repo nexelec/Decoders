@@ -5,7 +5,7 @@
  */
 
 function decodeUplink(input) {
-    
+
     var stringHex = bytesString(input.bytes);
    
     var octetTypeProduit = parseInt(stringHex.substring(0,2),16);
@@ -103,7 +103,7 @@ function decodeUplink(input) {
     
     function active(octetActive)
     {
-        data=["Not active","Active"]
+        var data=["Not active","Active"]
         return data[octetActive];
     }
 
@@ -127,22 +127,15 @@ function decodeUplink(input) {
 
     function nfcStatusConfiguration(nfcStatus)
     {
-        data=["Discoverable","Not Discoverable","RFU","RFU"]
+        var data=["Discoverable","Not Discoverable","RFU","RFU"]
         return data[nfcStatus];
     }
 
     function hwRevision(octetHWRevision)
     {
-        switch(octetHWRevision){
-            case 0: 
-                data="C030A";
-            break;
+        var data = ["V000","V001","V002","V003"]
 
-            case 1:
-                data="1";
-            break;
-        }
-        return data;
+        return data[octetHWRevision];
     }
 
     function swRevision(octetSWRevision)

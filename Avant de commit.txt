@@ -1,0 +1,3 @@
+git add .
+git commit -m "nom du commit"
+git push

@@ -6,7 +6,7 @@
 
 function decodeUplink(input) 
 {
-  
+
     var stringHex = bytesString(input.bytes);
     
     var octetTypeProduit = parseInt(stringHex.substring(0,2),16);
