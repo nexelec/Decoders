@@ -247,7 +247,6 @@ function minutesToDate(N) {
 
         switch (octetVersionMessage) {
             case 0:
-                node.warn("ancienne version de trame périodique : V0");
                 data_temperature = (parseInt(stringHex.substring(4, 7), 16) >> 2) & 0x3FF;
                 data_regulation_temperature = (parseInt(stringHex.substring(6, 8), 16)) & 0x3F;
                 data_source_regulation_temperature = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x3;
@@ -274,7 +273,6 @@ function minutesToDate(N) {
                 };
                 break;
             case 1:
-                node.warn("nouvelle version de trame périodique : V1");
                 data_temperature = (parseInt(stringHex.substring(4, 7), 16) >> 2) & 0x3FF;
                 data_regulation_temperature = (parseInt(stringHex.substring(6, 8), 16)) & 0x3F;
                 data_source_regulation_temperature = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x3;
@@ -333,7 +331,7 @@ function minutesToDate(N) {
             "statusMotorCalibration": statusMotorCalibration(data_motor_calibration_status),
             "motorStrokeDistance": distance_µm(data_motor_stroke_distance),
             "timeActivation": month(data_activation_time),
-            "productDate": minutesTosDate(data_date_of_product),
+            "productDate": minutesToDate(data_date_of_product),
             "isD2Dactive": (data_interco_with_node)
         };
 
@@ -369,7 +367,6 @@ function minutesToDate(N) {
 
     
         let data = {};
-        console.log("octetVersionMessage:", octetVersionMessage)
         if (octetVersionMessage == 0) {
             let data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
             let data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
