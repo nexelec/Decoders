@@ -27,7 +27,6 @@ function decodeUplink(input) {
         return bufferString;
     }
 
-
     function dataOutput(octetTypeMessage, octetVersionMessage) {
         var outputTypeMessage = ["Reserved", periodicOutput(stringHex, octetVersionMessage), productStatusOutput(stringHex, octetVersionMessage), externalProbeStatusOutput(stringHex, octetVersionMessage), productConfigurationOutput(stringHex, octetVersionMessage), dailyProfil1Output(stringHex, octetVersionMessage), dailyProfil2Output(stringHex, octetVersionMessage), dailyProfil3Output(stringHex, octetVersionMessage)]
         return outputTypeMessage[octetTypeMessage]
@@ -65,8 +64,13 @@ function decodeUplink(input) {
         return data[octetOn];
     }
 
-    function period(octetPeriod) {
+    function period(octetPeriod) 
+    {
         return { "value": parseFloat(octetPeriod * 10), "unit": "min" }
+    }
+
+    function minute(octetMinute){
+        return { "value": octetMinute, "unit": "min" }
     }
 
     function distance_µm(octetdistance) {
@@ -75,6 +79,10 @@ function decodeUplink(input) {
 
     function percentage(octetpercentage) {
         return { "value": octetpercentage, "unit": "%" }
+    }
+    
+    function day(octetday) {
+        return { "value": octetday, "unit": "day" }
     }
 
     function month(octetmonth) {
@@ -218,19 +226,18 @@ function decodeUplink(input) {
 
     }
 
+    function minutesToDate(N) {
+        const date = new Date(2026, 0, 1, 0, 0, 0);
+        date.setMinutes(date.getMinutes() + N);
 
-function minutesToDate(N) {
-    const date = new Date(2026, 0, 1, 0, 0, 0);
-    date.setMinutes(date.getMinutes() + N);
+        const jj = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const aaaa = date.getFullYear();
+        const hh = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
 
-    const jj = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const aaaa = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-
-    return `${jj}/${mm}/${aaaa} ${hh}:${min}`;
-}
+        return `${jj}/${mm}/${aaaa} ${hh}:${min}`;
+    }
 
     function periodicOutput(stringHex, octetVersionMessage) {
 
@@ -548,6 +555,107 @@ function minutesToDate(N) {
                 },
                 "downlinkFcnt": data_downling_counter,
             };
+        }
+
+        if  (octetVersionMessage == 2){
+        
+            let data_source_reconfig = (parseInt(stringHex.substring(4, 5), 16) >> 1) & 0x7;
+            let data_status_reconfig = (parseInt(stringHex.substring(4, 6), 16) >> 3) & 0x3;
+            let data_period_Periodic_Transmission_regulation_on = (parseInt(stringHex.substring(5, 6), 16)) & 0x7;
+            let data_period_Periodic_Transmission_regulation_off = (parseInt(stringHex.substring(6, 8), 16)) & 0xFF;
+            let data_child_lock = (parseInt(stringHex.substring(8, 9), 16) >> 3) & 0x1;
+            let data_child_lock_without_connection = (parseInt(stringHex.substring(8, 9), 16) >> 2) & 0x1;
+            let data_general_regulation = (parseInt(stringHex.substring(8, 9), 16) >> 1) & 0x1;
+            let data_regulation_minimal_temp = (parseInt(stringHex.substring(8, 11), 16) >> 3) & 0x3F;
+            let data_regulation_maximal_temp = (parseInt(stringHex.substring(10, 12), 16) >> 1) & 0x3F;
+            let data_anti_freeze = (parseInt(stringHex.substring(11, 12), 16)) & 0x1;
+            let data_anti_freeze_temperature_threshold = (parseInt(stringHex.substring(12, 14), 16) >> 2) & 0x3F;
+            let data_open_window_detection = (parseInt(stringHex.substring(13, 14), 16) >> 1) & 0x1;
+            let data_open_window_temperature_drop = (parseInt(stringHex.substring(13, 15), 16)) & 0x1F;
+            let data_open_window_pause_duration = (parseInt(stringHex.substring(15, 17), 16) >> 2) & 0x3F;
+            let data_internal_temperature_offset = (parseInt(stringHex.substring(16, 19), 16) >> 3) & 0x7F;
+            let data_regulation_tolerance = (parseInt(stringHex.substring(18, 20), 16)) & 0x7F;
+            let data_temperature_confort_mode = (parseInt(stringHex.substring(20, 22), 16) >> 2) & 0x3F;
+            let data_temperature_eco_mode = (parseInt(stringHex.substring(21, 23), 16)) & 0x3F;
+            let data_temperature_absent_mode = (parseInt(stringHex.substring(23, 25), 16) >> 2) & 0x3F;
+            let data_low_battery_valve_opening_percent = (parseInt(stringHex.substring(24, 26), 16) >> 3) & 0x7F;
+            let data_protocol_and_region = (parseInt(stringHex.substring(26, 28), 16) >> 3) & 0xF;
+            let data_time_zone = (parseInt(stringHex.substring(27, 29), 16) >> 2) & 0x1F;
+            let data_join_scheduled = (parseInt(stringHex.substring(28, 29), 16) >> 1) & 0x1;
+            let data_nfc_status = (parseInt(stringHex.substring(28, 30), 16) >> 3) & 0x3;
+            let data_kp = (parseInt(stringHex.substring(29, 31), 16)) & 0x7F;
+            let data_ki = (parseInt(stringHex.substring(31, 33), 16) >> 1) & 0x7F;
+            let data_heating_period = (parseInt(stringHex.substring(32, 33), 16)) & 0x1;
+            let data_heating_start_month = (parseInt(stringHex.substring(33, 34), 16)) & 0xF;
+            let data_heating_start_day = (parseInt(stringHex.substring(34, 35), 16) >> 3) & 0x1F;
+            let data_heating_end_month = (parseInt(stringHex.substring(35, 37), 16) >> 3) & 0xF;
+            let data_heating_end_day = (parseInt(stringHex.substring(36, 38), 16) >> 2) & 0x1F;
+            let data_planning = (parseInt(stringHex.substring(37, 38), 16) >> 1) & 0x01;
+            let data_daily_planning = (parseInt(stringHex.substring(37, 42), 16) >> 1) & 0xFFFF;
+            let data_daily_planning_monday = (parseInt(stringHex.substring(37, 38), 16) >> 3) & 0x03;
+            let data_daily_planning_tuesday = (parseInt(stringHex.substring(38, 39), 16) >> 1) & 0x03;
+            let data_daily_planning_wednesday = (parseInt(stringHex.substring(38, 39), 16) >> 3) & 0x03;
+            let data_daily_planning_thursday = (parseInt(stringHex.substring(39, 40), 16) >> 1) & 0x03;
+            let data_daily_planning_friday = (parseInt(stringHex.substring(39, 40), 16) >> 3) & 0x03;
+            let data_daily_planning_saturday = (parseInt(stringHex.substring(40, 41), 16) >> 1) & 0x03;
+            let data_daily_planning_sunday = (parseInt(stringHex.substring(40, 42), 16) >> 3) & 0x03;
+            let data_downling_counter = (parseInt(stringHex.substring(41, 46), 16) >> 1) & 0xFFFF;
+            let data_enable_boost = (parseInt(stringHex.substring(45, 46), 16)) & 0x01;
+            let data_boost_activation_duration = (parseInt(stringHex.substring(46, 48), 16) >> 1) & 0x7F;
+            let data_valve_Opening_Percent_Control_Disabled = (parseInt(stringHex.substring(47, 50), 16) >> 2) & 0x7F;
+        
+
+            data = {
+                "typeOfProduct": typeOfProduct(octetTypeProduit),
+                "typeOfMessage": typeOfMessage(octetTypeMessage),
+                "versionOfMessage": octetVersionMessage,
+                "sourceReconfiguration": fctSourceReconfiguration(data_source_reconfig),
+                "statusReconfiguration": fctStatusReconfiguration(data_status_reconfig),
+                "periodPeriodicTransmissionRegulationOn": period(data_period_Periodic_Transmission_regulation_on),
+                "periodPeriodicTransmissionRegulationOff": period(data_period_Periodic_Transmission_regulation_off),
+                "enableChildLock": onOff(data_child_lock),
+                "childLockOfflineBehavior": childLockOffline(data_child_lock_without_connection),
+                "enableRegulation": onOff(data_general_regulation),
+                "minimumRegulationTemperature": temperatureRegulation(data_regulation_minimal_temp),
+                "maximumRegulationTemperature": temperatureRegulation(data_regulation_maximal_temp),
+                "enableFrostProtect": onOff(data_anti_freeze),
+                "frostProtectActivationThreshold": temperatureRegulation(data_anti_freeze_temperature_threshold),
+                "enableOpenWindowDetection": onOff(data_open_window_detection),
+                "openWindowDetectionTemperatureDrop": temperatureDrop(data_open_window_temperature_drop),
+                "openWindowDetectionPauseDuration": minute(data_open_window_pause_duration),
+                "temperatureInternalOffset": temperatureOffset(data_internal_temperature_offset),
+                "regulationTolerance": temperatureDrop(data_regulation_tolerance),
+                "temperatureModeConfort": temperatureRegulation(data_temperature_confort_mode),
+                "temperatureModeEco": temperatureRegulation(data_temperature_eco_mode),
+                "temperatureModeAbsent": temperatureRegulation(data_temperature_absent_mode),
+                "lowBatteryValveOpeningPercent": percentage(data_low_battery_valve_opening_percent),
+                "protocolAndRegion": protocolAndRegion(data_protocol_and_region),
+                "timeZone": timeZone(data_time_zone),
+                "isJoinPending": trueFalse(data_join_scheduled),
+                "enableNfcDiscover": onOff(data_nfc_status),
+                "kp": data_kp,
+                "ki": data_ki,
+                "enableHeatingPeriod": onOff(data_heating_period),
+                "heatingStartMonth": month(data_heating_start_month),
+                "heatingStartDay": day(data_heating_start_day),
+                "heatingEndMonth": month(data_heating_end_month),
+                "heatingEndDay": day(data_heating_end_day),
+                "enablePlanningMode": onOff(data_planning),
+                "dailyPlanning": {
+                    "monday": profil(data_daily_planning_monday),
+                    "tuesday": profil(data_daily_planning_tuesday),
+                    "wednesday": profil(data_daily_planning_wednesday),
+                    "thursday": profil(data_daily_planning_thursday),
+                    "friday": profil(data_daily_planning_friday),
+                    "saturday": profil(data_daily_planning_saturday),
+                    "sunday": profil(data_daily_planning_sunday),
+                },
+                "downlinkFcnt": data_downling_counter,
+                "enableBoost" : onOff(data_enable_boost),
+                "boostActivationDuration" : minute(data_boost_activation_duration),
+                "valveOpeningPercentControlDisabled": percentage(data_valve_Opening_Percent_Control_Disabled)
+            };
+
         }
         return data
     }
