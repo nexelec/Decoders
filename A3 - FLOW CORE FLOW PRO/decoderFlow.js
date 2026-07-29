@@ -587,7 +587,7 @@ function decodeUplink(input) {
             let data_ki = (parseInt(stringHex.substring(31, 33), 16) >> 1) & 0x7F;
             let data_heating_period = (parseInt(stringHex.substring(32, 33), 16)) & 0x1;
             let data_heating_start_month = (parseInt(stringHex.substring(33, 34), 16)) & 0xF;
-            let data_heating_start_day = (parseInt(stringHex.substring(34, 35), 16) >> 3) & 0x1F;
+            let data_heating_start_day = (parseInt(stringHex.substring(34, 36), 16) >> 3) & 0x1F;
             let data_heating_end_month = (parseInt(stringHex.substring(35, 37), 16) >> 3) & 0xF;
             let data_heating_end_day = (parseInt(stringHex.substring(36, 38), 16) >> 2) & 0x1F;
             let data_planning = (parseInt(stringHex.substring(37, 38), 16) >> 1) & 0x01;
