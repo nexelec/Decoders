@@ -1,7 +1,7 @@
 /* 
 * Payload Decoder LoRa Alliance for FLOW CORE & FLOW PRO
 * Copyright 2026 Nexelec
-* Version : 1.0.5
+* Version : 1.0.6
 */
 
 function decodeUplink(input) {
@@ -592,7 +592,7 @@ function decodeUplink(input) {
             let data_heating_end_day = (parseInt(stringHex.substring(36, 38), 16) >> 2) & 0x1F;
             let data_planning = (parseInt(stringHex.substring(37, 38), 16) >> 1) & 0x01;
             let data_daily_planning = (parseInt(stringHex.substring(37, 42), 16) >> 1) & 0xFFFF;
-            let data_daily_planning_monday = (parseInt(stringHex.substring(37, 38), 16) >> 3) & 0x03;
+            let data_daily_planning_monday = (parseInt(stringHex.substring(37, 39), 16) >> 3) & 0x03;
             let data_daily_planning_tuesday = (parseInt(stringHex.substring(38, 39), 16) >> 1) & 0x03;
             let data_daily_planning_wednesday = (parseInt(stringHex.substring(38, 39), 16) >> 3) & 0x03;
             let data_daily_planning_thursday = (parseInt(stringHex.substring(39, 40), 16) >> 1) & 0x03;
