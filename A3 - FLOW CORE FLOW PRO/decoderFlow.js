@@ -112,7 +112,7 @@ function decodeUplink(input) {
     }
 
     function regulationTemperature(octetTemperatureValue) {
-        if (octetTemperatureValue >= 62) { return octetTemperatureValue }
+        if (octetTemperatureValue >= 63) { return octetTemperatureValue }
         else { return { "value": octetTemperatureValue * 0.5, "unit": "°C" } }
     }
 
