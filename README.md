@@ -1,6 +1,6 @@
 # 🧩 Decoders
 
-Uplink decoders for **Nexelec** products — X2, X5, and other product families.
+Uplink decoders for **Nexelec** products — A1, A3, X2, X5, X8, X9 and other product families.
 
 This repository centralizes all **payload decoding scripts** used to interpret uplink messages from Nexelec IoT devices (LoRa, Sigfox, etc.).
 
@@ -10,8 +10,11 @@ This repository centralizes all **payload decoding scripts** used to interpret u
 
 ```
 Decoders/
-├── README.md
-├── X2 - FEEL+ RISE+ WAVE+ MOVE+ SIGN+ SENSE+ ATMO+
+├── A100LS_C - RELAY/
+│   └── decoderA100.js
+├── A3 - FLOW CORE FLOW PRO/
+│   └── decoderFlow.js
+├── X2 - FEEL+ RISE+ WAVE+ MOVE+ SIGN+ SENSE+ ATMO+/
 │   ├── X220 - RISE+/
 │   │   └── decoderX2.js
 │   ├── X230 - WAVE+/
@@ -27,7 +30,6 @@ Decoders/
 │   └── X290 - MOVE+/
 │       └── decoderX2.js
 ├── X5 - SIGN WAVE MOVE RISE FEEL ECHO VIEW/
-│   ├── Bacnet/
 │   ├── X520 - RISE/
 │   │   └── decoderLoRaSigfoxX5.js
 │   ├── X530 - WAVE/
@@ -51,6 +53,20 @@ Decoders/
 ```
 
 Each subfolder corresponds to a **product reference** or **firmware variant**, and contains the specific decoder used to parse sensor payloads.
+
+---
+
+## 📚 Product Families
+
+| Family | Products | Decoder |
+|---|---|---|
+| **A100LS_C** | RELAY | `decoderA100.js` |
+| **A3** | FLOW CORE, FLOW PRO | `decoderFlow.js` |
+| **X2** | FEEL+, RISE+, WAVE+, MOVE+, SIGN+, SENSE+, ATMO+ | `decoderX2.js` (per reference) |
+| **X5** | SIGN, WAVE, MOVE, RISE, FEEL, ECHO, VIEW | `decoderLoRaSigfoxX5.js` (per reference) |
+| **X8** | AIR+, AIR | `decoderAir+.js` |
+| **X8** | ORIGIN+, ORIGIN, GUARD+, GUARD | `decoderOrigin+.js` |
+| **X9** | TRACK+ | `decoderTrack+.js` |
 
 ---
 
