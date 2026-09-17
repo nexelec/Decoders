@@ -90,21 +90,16 @@ function decodeUplink(input) {
         return message_name[octetProductHwStatus]
     }
 
-    function battery(octetBattery)
-    {
-        return {"value":((octetBattery*5)+2000),"unit":"mV"}
-    }
-
-    function internalResistance(octetInternalResistance)
-    {
-        return {"value":((octetInternalResistance*50)),"unit":"mOhm"}
-    }
-
-    
     function active(octetActive)
     {
         var data=["Not active","Active"]
         return data[octetActive];
+    }
+
+    function antiTear(octetaAntiTear)
+    {
+        if(octetaAntiTear==0){return "No magnetic base detected"}
+        if(octetaAntiTear==1){return "Magnetic base detected"}
     }
 
     function reconfigurationSource(octetReconfigurationSource)
@@ -152,8 +147,6 @@ function decodeUplink(input) {
         return data;
     }
 
-
-    
     function pendingJoin(octetPendingJoin)
     {
         if(octetPendingJoin==0){return "No join request scheduled"}
@@ -227,13 +220,7 @@ function decodeUplink(input) {
 
         var battery_level = (parseInt(stringHex.substring(11, 12), 16) >> 2) & 0x03;
         var magnet_detection = (parseInt(stringHex.substring(11, 12), 16) >> 1) & 0x01;
-
-        //masqué en public
-        var battery_voltage = parseInt(stringHex.substring(12, 14), 16);
-        var battery_resistance_th = parseInt(stringHex.substring(14, 16), 16);
-        var battery_voltage_low_th = parseInt(stringHex.substring(16, 18), 16);
         
-
         data = { "typeOfProduct": typeOfProduct(octetTypeProduit),
         "typeOfMessage": typeOfMessage(octetTypeMessage),
         "hwRevision": hwRevision(hw_version),
@@ -244,10 +231,7 @@ function decodeUplink(input) {
         "memoryFault":  productHwStatusArgument(memory_status),
         "hushStatus": productHwStatusArgument(default_hush),
         "energyStatus": batterieLevelArgument(battery_level),
-        "batteryVoltage":battery(battery_voltage),
-        "batteryResistanceThreshold":internalResistance(battery_resistance_th),
-        "batteryLowVoltageThreshold":battery(battery_voltage_low_th),
-    
+        "magnetDetection": antiTear(magnet_detection),
         };
         return data;
     }
