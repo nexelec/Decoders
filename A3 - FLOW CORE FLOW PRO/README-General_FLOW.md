@@ -3,7 +3,8 @@
 
 
 This document summarizes the communication behavior and message structure of the **FLOW** connected thermostatic valve head.  
-It details all **uplink messages (0x01–0x07)** sent via **LoRaWAN**, together with the product functions that drive them.
+It details all **uplink messages (0x01–0x07)** sent via **LoRaWAN**, together with the product functions that drive them.  
+Reference: technical guide **D1183C — revision C**.
 
 ---
 
@@ -109,13 +110,18 @@ Setpoints are configurable from **0 °C to 31 °C in 0.5 °C steps**. Four tempe
 - Wheel adjustment in 0.5 °C steps, default range **15 °C … 26 °C**, configurable.
 - **Child Lock** disables wheel adjustment. Its behavior when the product loses network coverage is configurable (lock kept, or automatically released).
 
+### Setpoint display orientation
+- The setpoint display can be switched between **horizontal** and **vertical** mode to match the valve mounting orientation.
+- Local change: wheel pressed 6 times. Remote change: downlink `0x9A` (0 = horizontal, 1 = vertical).
+- The current orientation is reported in frame 0x04 version 3 (bit 199).
+
 ---
 
 ## 7. Protective and Maintenance Functions
 
 | Function | Default | Range | Behavior |
 |---|---|---|---|
-| **BOOST** | 30 min | 10–120 min, 10 min steps | A 2 s button press fully opens the valve and suspends regulation. Reported in frame 0x01. |
+| **BOOST** | 30 min | 10–120 min, 10 min steps | Fully opens the valve, whether regulation is enabled or disabled. Holding the button 2 to 10 s makes "UP" blink; releasing it activates BOOST and "UP" is displayed for 5 s as confirmation. A new press restarts the full duration. Reported in frame 0x01. |
 | **Frost protection** | 7 °C | 0–31 °C | Applies when regulation is disabled; opens the valve below the threshold. Can be disabled. |
 | **Open-window detection** | 1 °C/min drop, 30 min pause | 0.1–3.0 °C/min, 1–60 min | Pauses regulation and closes the valve on a rapid temperature drop. |
 | **Anti-seize cycle** | Monthly | — | Full close / full open / return to previous position, while regulation is inactive. Sends no frame of its own. |
@@ -141,7 +147,7 @@ A heating period can be defined by start and end date (for example 1 October →
 |---|---|---|
 | **Normal** | > 3000 mV | All functions available. |
 | **Low battery** | < 3000 mV | Status frame sent, low-battery icon displayed. All functions still available. |
-| **Critical battery** | < 2800 mV | Regulation disabled, valve forced to a partial opening (30 % by default, configurable), periodic data reduced to once per day, FUOTA disabled. |
+| **Critical battery** | < 2800 mV | Regulation disabled, valve forced to a partial opening (50 % by default, configurable), periodic data reduced to once per day, FUOTA disabled. |
 
 Battery voltage is reported per slot in frame 0x02, together with a coarse battery level.
 
@@ -170,6 +176,7 @@ Battery voltage is reported per slot in frame 0x02, together with a coarse batte
 - Frame layout: header **0x55** followed by one or more `Command ID + DATA` pairs.
 - Command IDs should be sent in ascending order to stay forward compatible.
 - After a reconfiguration the product returns an updated 0x04 frame carrying the source, the result and the downlink FCnt that triggered it.
+- Commands added in revision C: `0x97` (enable / disable FUOTA mode) and `0x9A` (setpoint display orientation).
 
 The full command list is given in [README-Frames_FLOW.md](README-Frames_FLOW.md).
 
@@ -177,11 +184,13 @@ The full command list is given in [README-Frames_FLOW.md](README-Frames_FLOW.md)
 
 ## 12. Decoder Notes
 
-- Decoder file: `decoderFlow.js` (version 1.0.6), LoRa Alliance `decodeUplink()` signature.
+- Decoder file: `decoderFlow.js` (version 1.0.7), LoRa Alliance `decodeUplink()` signature.
 - Product byte 0xD2 is reported as `FLOW`, 0xD6 as `FLOW+`.
 - Message type and message version share byte 1 (4 bits each); the decoder branches on both.
-- Periodic frame: versions **0** and **1** supported. Version 0 carries open-window and frost-protection flags; version 1 replaces them with the 4-bit *Regulation mode* field.
-- Configuration frame: versions **0, 1 and 2** supported. Frame **version 3** — which adds the LoRaWAN FUOTA activation bit at offset 192, see guide D1183C — is **not decoded yet**.
+- Periodic frame: versions **0** and **1** supported. Version 0 carries open-window and frost-protection flags; version 1 replaces them with the 4-bit *Regulation mode* field, and the decoder no longer outputs `isWindowOpenActive` / `isFrostProtectActive` for version 1.
+- Temperatures are rounded to 0.1 °C. Setpoint change source 5 is reported as `product time not up to date, degraded mode`; RFU values are reported as `reserved`.
+- Configuration frame: versions **0, 1, 2 and 3** supported. Version 3 adds `enableFuota` (bit 198) and `setpointDisplayOrientation` (bit 199).
+- Version 1.0.7 fixes the reading of the Wednesday and Friday weekly planning entries and of the low-battery valve opening percentage (configuration versions 1, 2 and 3).
 
 ---
 
@@ -191,7 +200,7 @@ The full command list is given in [README-Frames_FLOW.md](README-Frames_FLOW.md)
 - Downlink builder: [https://nexelec-support.fr/n/downlink/](https://nexelec-support.fr/n/downlink/)  
 - Autonomy calculator (VOLT): [https://nexelec-support.fr/n/volt/](https://nexelec-support.fr/n/volt/)  
 - Technical documentation: [https://support.nexelec.fr](https://support.nexelec.fr)  
-- Source document: **D1183C — FLOW Guide Technique**
+- Source document: **D1183C — FLOW Guide Technique, revision C**
 
 ---
 

@@ -1,7 +1,8 @@
 
 # FLOW CORE / FLOW PRO — Frame Decoding Reference (LoRaWAN Uplink 0x01–0x07)
 
-This document details the **uplink frame structures** of FLOW for LoRaWAN operation, plus the downlink command set.
+This document details the **uplink frame structures** of FLOW for LoRaWAN operation, plus the downlink command set.  
+Reference: technical guide **D1183C — revision C** and decoder `decoderFlow.js` **1.0.7**.
 
 ---
 
@@ -39,7 +40,7 @@ Version 0 keeps offsets 0–43 identical, then replaces the *Regulation mode* fi
 | 47 | 1 | Open Window Active | 0 = false, 1 = true |
 | 48 | 1 | Frost Protection Active | 0 = false, 1 = true |
 
-Both versions are handled by `decoderFlow.js`.
+Both versions are handled by `decoderFlow.js`. In version 1, the open-window and frost-protection states are no longer transmitted as flags: they are given by the *Regulation Mode* field (7 = open window, 4 = frost protection).
 
 ---
 
@@ -84,13 +85,13 @@ Transmitted only when a NODE One probe is paired with the head.
 
 ---
 
-## 5. Frame 0x04 — Product Configuration (version 2)
+## 5. Frame 0x04 — Product Configuration (version 3)
 
 | Offset | Size (bit) | Field | Description | Range | Scale | Unit |
 |--------:|-----------:|-------|-------------|-------|-------|------|
 | 0 | 8 | Product Type | 0xD2 / 0xD6 | — | — | — |
 | 8 | 4 | Message Type | 0x04 | — | — | — |
-| 12 | 4 | Version | 2 | — | — | — |
+| 12 | 4 | Version | 3 | — | — | — |
 | 16 | 3 | Reconfiguration Source | 0 = NFC, 1 = application downlink, 2 = product startup, 3–4 = reserved, 5 = periodic (7 days), 6 = manual action, 7 = reserved | — | — | — |
 | 19 | 2 | Reconfiguration Status | 0 = total success, 1 = partial success, 2 = total failure, 3 = reserved | — | — | — |
 | 21 | 3 | Periodic Period — Regulation ON | Periodic frame interval while regulating | 1–6 | 10 | min |
@@ -127,6 +128,8 @@ Transmitted only when a NODE One probe is paired with the head.
 | 183 | 1 | BOOST Enable | 0 = disabled, 1 = enabled | — | — | — |
 | 184 | 7 | BOOST Duration | BOOST activation duration | 10–120 | 1 | min |
 | 191 | 7 | Valve Opening — Regulation OFF | Valve opening while regulation is disabled | 0–100 | 1 | % |
+| 198 | 1 | LoRaWAN FUOTA Mode | 0 = FUOTA inactive, 1 = FUOTA active | — | — | — |
+| 199 | 1 | Setpoint Display Orientation | 0 = horizontal mode, 1 = vertical mode (matches the valve mounting orientation) | — | — | — |
 
 ### Version history
 
@@ -134,13 +137,11 @@ Transmitted only when a NODE One probe is paired with the head.
 |---|---|---|---|
 | 0 … 182 | Present | Present | Present, identical to V2 |
 | 183 … 197 | Present | Added in V2 | Absent |
-| 198 | Added in V3 | Absent | Absent |
+| 198 … 199 | Added in V3 | Absent | Absent |
 
-**Bit 198 (V3) — LoRaWAN FUOTA mode:** 0 = FUOTA inactive, 1 = FUOTA active.
+Version 3 keeps the whole version 2 structure (same order, format and meaning) and only adds bits 198 (FUOTA mode) and 199 (setpoint display orientation).
 
-> Note: the D1183C table prints this field at offset 192, which conflicts with the version-history annex of the same document (fields 183–197 are the BOOST and valve-opening fields, so the V3 addition lands at 198). The offset above follows the annex.
-
-> `decoderFlow.js` 1.0.6 implements configuration versions **0, 1 and 2**. Version 3 frames are not decoded yet.
+> `decoderFlow.js` 1.0.7 implements configuration versions **0, 1, 2 and 3**. Version 3 outputs the two new fields as `enableFuota` and `setpointDisplayOrientation`.
 
 ---
 
@@ -206,7 +207,9 @@ Downlink layout: header **0x55**, then one or more `Command ID + DATA` pairs, se
 | 0x93 | 1 | 0/1 | 0 = disabled, 1 = enabled | Child Lock behavior on network loss |
 | 0x94 | 1 | 1–99 | 0.1 °C … 9.9 °C | Regulation tolerance |
 | 0x95 | 1 | 0/1 | 0 = disabled, 1 = enabled | Enable / disable scheduling |
+| 0x97 | 1 | 0/1 | 0 = disabled, 1 = enabled | Enable / disable FUOTA mode |
 | 0x98 | 1 | 0–100 | 0–100 % | Valve opening while regulation is disabled |
+| 0x9A | 1 | 0/1 | 0 = horizontal mode, 1 = vertical mode | Setpoint display orientation |
 
 **Example — enable Child Lock:** `55 76 01`
 
@@ -225,7 +228,7 @@ Downlink layout: header **0x55**, then one or more `Command ID + DATA` pairs, se
 - Online decoder: [https://nexelec-support.fr/n/decoder/](https://nexelec-support.fr/n/decoder/)  
 - Downlink builder: [https://nexelec-support.fr/n/downlink/](https://nexelec-support.fr/n/downlink/)  
 - Technical documentation: [https://support.nexelec.fr](https://support.nexelec.fr)  
-- Source document: **D1183C — FLOW Guide Technique**
+- Source document: **D1183C — FLOW Guide Technique, revision C**
 
 ---
 
