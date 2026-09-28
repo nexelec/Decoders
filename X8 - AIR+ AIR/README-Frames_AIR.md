@@ -104,6 +104,108 @@ It covers message types 0x00 through 0x04, as defined in the D976A technical gui
 
 ---
 
+## 8. Decoder Output
+
+Two decoders are provided. They decode the same frames with the same bit layout and differ only in how status and configuration fields are returned.
+
+| File | Intended for | Status / configuration fields | Measurements |
+|------|--------------|-------------------------------|--------------|
+| `decoderAir+.js` | IoT platforms, dashboards, scripts (human-readable output) | English string, e.g. `"energyStatus": "Low"` | `{"value": number, "unit": string}` |
+| `decoderAir+_BMS.js` | Building Management Systems (Niagara, etc.) | Raw numeric code, e.g. `"energyStatus": 2` | `{"value": number, "unit": string}` |
+
+In both decoders every field keeps a single type for its whole life, so it can be mapped to a single point.
+
+### 8.1 Converted measurements
+
+Only the values carrying an offset or a scale are converted; every other field is returned as its raw value.
+
+| Field | Conversion | Unit |
+|-------|-----------|------|
+| `coConcentration` | raw | ppm |
+| `temperature` | raw / 10 − 30 | °C |
+| `relativeHumidity` | raw × 0.5 | %RH |
+| `deltaTemperature` | raw × 0.1 | °C |
+| `deltaCO` | raw × 5 | ppm |
+| `realtimePeriod` | raw × 10 | min |
+
+### 8.2 Measurement error codes
+
+When a measurement is not available, `value` holds the **raw error code** instead of a converted value. These codes lie outside the measurement range and cannot be mistaken for a real value.
+
+| Field | Sensor not present | Error |
+|-------|--------------------|-------|
+| `coConcentration` | — | 1023 |
+| `temperature` | 1022 | 1023 |
+| `relativeHumidity` | 254 | 255 |
+
+### 8.3 Status and configuration codes (`decoderAir+_BMS.js`)
+
+`decoderAir+.js` returns the label; `decoderAir+_BMS.js` returns the code. Codes not listed return `"Unknown"` in `decoderAir+.js`.
+
+| Field | Codes |
+|-------|-------|
+| `typeOfProduct` | 174 (0xAE) = Air+ LoRa, 175 (0xAF) = Air LoRa |
+| `typeOfMessage` | 0 = Product Status, 1 = CO Alarm Status, 2 = Real Time, 3 = Product Function Configuration, 4 = SAV Information |
+| `hwRevision` | 0 = V000, 1 = V001, 2 = V002, 3 = V003 |
+| `swRevision` | 0 = V0.0, 10 = V1.0 |
+| `coSensorStatus`, `tempHumSensorStatus`, `memoryFault` | 0 = Hardware working correctly, 1 = Hardware fault detected |
+| `hushStatus`, `preAlarm`, `localAlarm`, `coAlarmHush`, `realtimeStatus` | 0 = Not active, 1 = Active |
+| `energyStatus` | 0 = High, 1 = Medium, 2 = Low, 3 = Critical |
+| `magnetDetection` | 0 = No magnetic base detected, 1 = Magnetic base detected |
+| `productTest` | 0 = Test Off, 1 = Product test is running |
+| `iaqGlobal` | 0 = Excellent, 1 = Good, 2 = Fair, 3 = Poor, 4 = Bad, 5–6 = Not used, 7 = Error |
+| `iaqSource` | 0 = None, 1 = Dryness Indicator, 2 = Mould Indicator, 3 = Dust mites Indicator, 4 = CO, 5–14 = Reserved, 15 = Error |
+| `reconfigurationSource` | 0 = NFC, 1 = Applicative Downlink, 2 = Start-up product, 5 = Local, others = Reserved |
+| `reconfigurationState` | 0 = Total success, 1 = Partial success, 2 = Total failure, 3 = Reserved |
+| `nfcStatus` | 0 = Discoverable, 1 = Not Discoverable, 2–3 = RFU |
+| `regionSelection` | 1 = EU, others = RFU |
+| `d2dPing` | 0 = Not compatible, 1 = Compatible |
+| `pendingJoin` | 0 = No join request scheduled, 1 = Join request scheduled |
+
+### 8.4 Example — Real Time frame `AE0200A0C8C880`
+
+`decoderAir+.js`
+```json
+{
+  "data": {
+    "typeOfProduct": "Air+ LoRa",
+    "typeOfMessage": "Real Time",
+    "coConcentration": { "value": 2, "unit": "ppm" },
+    "temperature": { "value": 22.4, "unit": "°C" },
+    "relativeHumidity": { "value": 70, "unit": "%RH" },
+    "iaqGlobal": "Bad",
+    "iaqSource": "CO"
+  }
+}
+```
+
+`decoderAir+_BMS.js`
+```json
+{
+  "data": {
+    "typeOfProduct": 174,
+    "typeOfMessage": 2,
+    "coConcentration": { "value": 2, "unit": "ppm" },
+    "temperature": { "value": 22.4, "unit": "°C" },
+    "relativeHumidity": { "value": 70, "unit": "%RH" },
+    "iaqGlobal": 4,
+    "iaqSource": 4
+  }
+}
+```
+
+### 8.5 Decoding errors
+
+An unknown message type or a payload shorter than its frame returns an `errors` array instead of `data` (LoRa Alliance TS013), for example:
+
+```json
+{ "errors": ["Payload too short for message type 2: 2 bytes, 7 expected"] }
+```
+
+Minimum payload length: 0x00 = 6 bytes, 0x01 = 5 bytes, 0x02 = 7 bytes, 0x03 = 11 bytes, 0x04 = 2 bytes.
+
+---
+
 ## 🧾 Additional Resources
 
 - Online decoder: [https://nexelec-support.fr/n/decoder/](https://nexelec-support.fr/n/decoder/)  

@@ -1,19 +1,21 @@
  /*
- * Payload Decoder LoRa Alliance for AIR+ (X850), AIR (X845)
+ * Payload Decoder LoRa Alliance for AIR+ (X850), AIR (X845) - BMS variant
  * Copyright 2025 Nexelec
  * Version : 1.0.1
  *
- * For a BMS integration with raw numeric codes use decoderAir+_BMS.js.
+ * Every field has a single type for its whole life (number, or {"value": number, "unit"}),
+ * so it can be mapped directly to a BMS point. For a human-readable output use decoderAir+.js.
  *
- * Changes from 1.0.0:
+ * Changes from decoderAir+.js 1.0.0:
  * - coConcentration, temperature and relativeHumidity are always an object
  *   {"value", "unit"}; on error "value" holds the raw error code
  *   (CO: 1023 = Error; temperature: 1022 = Sensor not present, 1023 = Error;
  *   humidity: 254 = Sensor not present, 255 = Error)
- * - status and configuration fields stay English strings; unmapped codes
- *   return "Unknown" instead of undefined
- * - hushStatus: now "Not active"/"Active" instead of the hardware-fault labels
- * - regionSelection: value 0 now returns "RFU" instead of undefined
+ * - status and configuration fields (product/message type, revisions, statuses,
+ *   IAQ...) return their raw code as a number instead of an English label;
+ *   the meaning of each code is documented next to its function.
+ *   Only values with an offset or a scale are converted (CO, temperature,
+ *   humidity, delta temperature, delta CO, period)
  * - removed the duplicated humidity() function (the first declaration was dead code)
  * - downlinkCounter: removed the wrong 1-bit shift (the 16-bit counter was halved)
  * - only the frame matching the message type is decoded
@@ -69,19 +71,16 @@ function decodeUplink(input) {
         }
     }
 
-    // Enumerated field: English label, "Unknown" when the code is not mapped
+    // Enumerated field: the raw code is returned, the table only documents its meaning
     function enumeration(table, index)
     {
-        var label = table[index];
-        if(label === undefined){return "Unknown"}
-        return label;
+        return index;
     }
 
     function typeOfProduct(octetTypeProduit)
     {
-        if(octetTypeProduit==0xAF){return "Air LoRa"}
-        if(octetTypeProduit==0xAE){return "Air+ LoRa"}
-        return "Unknown";
+        // 0xAF = Air LoRa, 0xAE = Air+ LoRa
+        return octetTypeProduit;
     }
 
     function typeOfMessage(octetTypeMessage)
@@ -161,16 +160,14 @@ function decodeUplink(input) {
 
     function hwRevision(octetHWRevision)
     {
-        return "V" + ("00" + octetHWRevision).slice(-3);
+        // 0 = V000, 1 = V001, 2 = V002, 3 = V003
+        return octetHWRevision;
     }
 
     function swRevision(octetSWRevision)
     {
-        switch(octetSWRevision){
-            case 0: return "V0.0";
-            case 10: return "V1.0";
-        }
-        return "Unknown";
+        // 0 = V0.0, 10 = V1.0
+        return octetSWRevision;
     }
 
     function pendingJoin(octetPendingJoin)
@@ -207,8 +204,8 @@ function decodeUplink(input) {
 
     function loraRegion(octetRegion)
     {
-        if(octetRegion==1){return "EU"}
-        return "RFU";
+        // 1 = EU, other values = RFU
+        return octetRegion;
     }
 
     function deltaTemp(octetDeltaTemperature)
