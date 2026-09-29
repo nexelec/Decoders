@@ -1,7 +1,19 @@
 /* 
 * Payload Decoder LoRa Alliance for FLOW CORE & FLOW PRO
 * Copyright 2026 Nexelec
-* Version : 1.0.7
+* Version : 1.0.9
+*
+* Changes in 1.0.9:
+* - error codes are returned as strings, as in the technical guide, instead of raw numbers:
+*   temperatures 1023 = "Error", setpoints 63 = "Error", motor position / stroke 8191 = "Error",
+*   activation time 1023 = "Error", battery voltage 1021 = "No battery", 1022 = "Reserved",
+*   1023 = "Error" (battery error codes were returned multiplied by 5, e.g. 5115)
+* - configuration v0: lowBatteryValveOpeningPercent read on bits 91-97; it was read on the
+*   bits of temperatureModeAbsent
+*
+* Changes in 1.0.8:
+* - typeOfProduct: 0xD2 is now reported as "FLOW CORE" (was "FLOW") and
+*   0xD6 as "FLOW PRO" (was "FLOW+"), the commercial names of the technical guide
 */
 
 function decodeUplink(input) {
@@ -33,8 +45,8 @@ function decodeUplink(input) {
     }
 
     function typeOfProduct(octetTypeProduit) {
-        if (octetTypeProduit == 0xD2) { return "FLOW" }
-        if (octetTypeProduit == 0xD6) { return "FLOW+" }
+        if (octetTypeProduit == 0xD2) { return "FLOW CORE" }
+        if (octetTypeProduit == 0xD6) { return "FLOW PRO" }
     }
 
     function typeOfMessage(octetTypeMessage) {
@@ -74,6 +86,7 @@ function decodeUplink(input) {
     }
 
     function distance_µm(octetdistance) {
+        if (octetdistance >= 8191) { return "Error" }
         return { "value": octetdistance, "unit": "µm" }
     }
 
@@ -86,7 +99,7 @@ function decodeUplink(input) {
     }
 
     function month(octetmonth) {
-        if (octetmonth == 1023) { return octetmonth }
+        if (octetmonth == 1023) { return "Error" }
         else { return { "value": octetmonth, "unit": "month" } }
     }
 
@@ -107,12 +120,12 @@ function decodeUplink(input) {
     }
 
     function temperature(octetTemperatureValue) {
-        if (octetTemperatureValue >= 1023) { return octetTemperatureValue }
+        if (octetTemperatureValue >= 1023) { return "Error" }
         else { return { "value": Math.round(((octetTemperatureValue / 10) - 30) * 10) / 10, "unit": "°C" } }
     }
 
     function regulationTemperature(octetTemperatureValue) {
-        if (octetTemperatureValue >= 63) { return octetTemperatureValue }
+        if (octetTemperatureValue >= 63) { return "Error" }
         else { return { "value": octetTemperatureValue * 0.5, "unit": "°C" } }
     }
 
@@ -142,13 +155,14 @@ function decodeUplink(input) {
     }
 
     function motorDistance(octetMotor) {
-        if (octetMotor >= 8191) { return octetMotor }
+        if (octetMotor >= 8191) { return "Error" }
         return { "value": octetMotor, "unit": "µm" }
     }
 
     function batteryVoltage(octetbatteryVoltage) {
-        if (octetbatteryVoltage === 1023) { return octetbatteryVoltage * 5 }
-        else if (octetbatteryVoltage === 1021) { return octetbatteryVoltage * 5 }
+        if (octetbatteryVoltage === 1023) { return "Error" }
+        else if (octetbatteryVoltage === 1022) { return "Reserved" }
+        else if (octetbatteryVoltage === 1021) { return "No battery" }
         else { return { "value": (octetbatteryVoltage * 5), "unit": "mV" } }
     }
 
@@ -171,7 +185,7 @@ function decodeUplink(input) {
     }
 
     function temperatureRegulation(octetTemp) {
-        if (octetTemp === 63) { return octetTemp }
+        if (octetTemp === 63) { return "Error" }
         else { return { "value": (octetTemp * 0.5), "unit": "°C" } }
     }
 
@@ -399,7 +413,7 @@ function decodeUplink(input) {
             let data_temperature_confort_mode = (parseInt(stringHex.substring(18, 20), 16) >> 1) & 0x3F;
             let data_temperature_eco_mode = (parseInt(stringHex.substring(19, 22), 16) >> 3) & 0x3F;
             let data_temperature_absent_mode = (parseInt(stringHex.substring(21, 23), 16) >> 1) & 0x3F;
-            let data_low_battery_valve_opening_percent = (parseInt(stringHex.substring(21, 23), 16) >> 1) & 0x7F;
+            let data_low_battery_valve_opening_percent = (parseInt(stringHex.substring(22, 25), 16) >> 2) & 0x7F; // bits 91-97
             let data_protocol_and_region = (parseInt(stringHex.substring(24, 26), 16) >> 2) & 0xF;
             let data_time_zone = (parseInt(stringHex.substring(25, 27), 16) >> 1) & 0x1F;
             let data_join_scheduled = (parseInt(stringHex.substring(26, 27), 16)) & 0x1;

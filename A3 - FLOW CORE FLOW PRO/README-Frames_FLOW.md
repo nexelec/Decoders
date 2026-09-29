@@ -2,7 +2,7 @@
 # FLOW CORE / FLOW PRO — Frame Decoding Reference (LoRaWAN Uplink 0x01–0x07)
 
 This document details the **uplink frame structures** of FLOW for LoRaWAN operation, plus the downlink command set.  
-Reference: technical guide **D1183C — revision C** and decoder `decoderFlow.js` **1.0.7**.
+Reference: technical guide **D1183C — revision C** and decoder `decoderFlow.js` **1.0.9**. Downlinks can be built with `encoderFlow.js`; example uplinks are listed in [README-Examples_FLOW.md](README-Examples_FLOW.md).
 
 ---
 
@@ -141,7 +141,7 @@ Transmitted only when a NODE One probe is paired with the head.
 
 Version 3 keeps the whole version 2 structure (same order, format and meaning) and only adds bits 198 (FUOTA mode) and 199 (setpoint display orientation).
 
-> `decoderFlow.js` 1.0.7 implements configuration versions **0, 1, 2 and 3**. Version 3 outputs the two new fields as `enableFuota` and `setpointDisplayOrientation`.
+> `decoderFlow.js` 1.0.9 implements configuration versions **0, 1, 2 and 3**. Version 3 outputs the two new fields as `enableFuota` and `setpointDisplayOrientation`.
 
 ---
 
@@ -212,6 +212,8 @@ Downlink layout: header **0x55**, then one or more `Command ID + DATA` pairs, se
 | 0x9A | 1 | 0/1 | 0 = horizontal mode, 1 = vertical mode | Setpoint display orientation |
 
 **Example — enable Child Lock:** `55 76 01`
+
+`encoderFlow.js` builds these frames from JSON (`encodeDownlink`) and parses them back (`decodeDownlink`), e.g. `{"setChildLock": true}` → `55 76 01`, `{"setSetpointDisplayOrientation": "vertical"}` → `55 9A 01`. Command IDs are sorted automatically and out-of-range values are rejected.
 
 ---
 

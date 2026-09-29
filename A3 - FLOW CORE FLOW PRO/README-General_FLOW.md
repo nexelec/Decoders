@@ -26,7 +26,7 @@ Reference: technical guide **D1183C — revision C**.
 | Power supply | 2 × AA lithium 1.5 V | 4 × AA lithium 1.5 V |
 | Mounting base | Standard base supplied (RUG compatible) | Reinforced RUG base supplied |
 
-Both variants share the same firmware functions and the same frame formats.
+Both variants share the same firmware functions, the same frame formats and the same LoRaWAN profile.
 
 **Compatible accessories:** NODE One (remote temperature probe), CASE+ (anti-vandalism shell), RUG (reinforced base), ADAPT (valve adapter kit).
 
@@ -55,7 +55,8 @@ Frames 0x05–0x07 are repeated every 7 days only when scheduling is enabled and
 |---|---|
 | LoRaWAN version | 1.0.4 |
 | Regional parameters | RP002 1.0.4 |
-| Profile | Class A (RX2 SF9 or SF12) |
+| Profile | Class A |
+| RX2 default data rate | SF9 (DR3) |
 | Band | EU868 |
 | Join type | OTAA |
 | AppEUI | 70B3D540F70CE4D2 |
@@ -69,6 +70,13 @@ Frames 0x05–0x07 are repeated every 7 days only when scheduling is enabled and
 - After that sequence, one join attempt per day.
 - A daily **LinkCheck** is performed together with the product status message; after 3 unanswered checks the product restarts the join procedure.
 - A join can be scheduled remotely by downlink (`0x1C`); the acknowledgement appears as *Deferred network connection = 1* in frame 0x04.
+
+### MAC Commands
+
+| Command | When | Purpose |
+|---|---|---|
+| **LinkCheckReq** | Once a day, with the Product Status frame (0x02) | Network connection check; after 3 unanswered checks the product restarts the join procedure. |
+| **DeviceTimeReq** | At start-up, with every frame of the post-join burst (5 to 6 frames: 0x02, 0x03 if a NODE One is paired, 0x04, 0x05–0x07); then once a day, with the Product Status frame (0x02) | Date and time synchronization (UTC) used by the heating schedules and the heating season. |
 
 ---
 
@@ -104,7 +112,7 @@ Setpoints are configurable from **0 °C to 31 °C in 0.5 °C steps**. Four tempe
 - Each weekday is mapped to one of the three profiles (frame 0x04, *Weekly planning* field).
 - A manual change (wheel, NFC or downlink) is **temporary**: it holds until the next scheduled slot change.
 - Scheduling requires a valid date and time. Without it, schedules are disabled, the product falls back to a 19.5 °C setpoint and displays error code **F4**.
-- Date and time are synchronized automatically from the LoRaWAN network (UTC); the time zone is configurable by downlink (`0x63`) or NFC.
+- Date and time are synchronized automatically from the LoRaWAN network (UTC, MAC command `DeviceTimeReq`, see section 4); the time zone is configurable by downlink (`0x63`) or NFC.
 
 ### Manual setpoint and Child Lock
 - Wheel adjustment in 0.5 °C steps, default range **15 °C … 26 °C**, configurable.
@@ -184,12 +192,16 @@ The full command list is given in [README-Frames_FLOW.md](README-Frames_FLOW.md)
 
 ## 12. Decoder Notes
 
-- Decoder file: `decoderFlow.js` (version 1.0.7), LoRa Alliance `decodeUplink()` signature.
-- Product byte 0xD2 is reported as `FLOW`, 0xD6 as `FLOW+`.
+- Decoder file: `decoderFlow.js` (version 1.0.9), LoRa Alliance `decodeUplink()` signature.
+- Downlink encoder: `encoderFlow.js` (version 1.0.0), LoRa Alliance `encodeDownlink()` / `decodeDownlink()` signatures, full revision C command set.
+- Example uplinks for every frame type and version: [README-Examples_FLOW.md](README-Examples_FLOW.md) / `examples_FLOW.json`.
+- Product byte 0xD2 is reported as `FLOW CORE`, 0xD6 as `FLOW PRO` (before version 1.0.8: `FLOW` and `FLOW+`).
 - Message type and message version share byte 1 (4 bits each); the decoder branches on both.
 - Periodic frame: versions **0** and **1** supported. Version 0 carries open-window and frost-protection flags; version 1 replaces them with the 4-bit *Regulation mode* field, and the decoder no longer outputs `isWindowOpenActive` / `isFrostProtectActive` for version 1.
 - Temperatures are rounded to 0.1 °C. Setpoint change source 5 is reported as `product time not up to date, degraded mode`; RFU values are reported as `reserved`.
 - Configuration frame: versions **0, 1, 2 and 3** supported. Version 3 adds `enableFuota` (bit 198) and `setpointDisplayOrientation` (bit 199).
+- Error codes are returned as English strings (since 1.0.9): `"Error"` for temperatures (1023), setpoints (63), motor position and stroke (8191) and activation time (1023); battery voltages return `"No battery"` (1021), `"Reserved"` (1022) or `"Error"` (1023).
+- Version 1.0.9 also fixes the reading of the low-battery valve opening percentage in configuration version 0.
 - Version 1.0.7 fixes the reading of the Wednesday and Friday weekly planning entries and of the low-battery valve opening percentage (configuration versions 1, 2 and 3).
 
 ---
