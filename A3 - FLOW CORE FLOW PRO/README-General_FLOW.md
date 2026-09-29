@@ -197,6 +197,7 @@ The full command list is given in [README-Frames_FLOW.md](README-Frames_FLOW.md)
 - Example uplinks for every frame type and version: [README-Examples_FLOW.md](README-Examples_FLOW.md) / `examples_FLOW.json`.
 - Product byte 0xD2 is reported as `FLOW CORE`, 0xD6 as `FLOW PRO` (before version 1.0.8: `FLOW` and `FLOW+`).
 - Message type and message version share byte 1 (4 bits each); the decoder branches on both.
+- Frame versions found on products in the field: periodic data **version 1**, product configuration **versions 1, 2 and 3**. Version 0 of both frames is still decoded for completeness.
 - Periodic frame: versions **0** and **1** supported. Version 0 carries open-window and frost-protection flags; version 1 replaces them with the 4-bit *Regulation mode* field, and the decoder no longer outputs `isWindowOpenActive` / `isFrostProtectActive` for version 1.
 - Temperatures are rounded to 0.1 °C. Setpoint change source 5 is reported as `product time not up to date, degraded mode`; RFU values are reported as `reserved`.
 - Configuration frame: versions **0, 1, 2 and 3** supported. Version 3 adds `enableFuota` (bit 198) and `setpointDisplayOrientation` (bit 199).

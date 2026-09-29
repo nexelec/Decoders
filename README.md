@@ -168,6 +168,12 @@ You can include these decoders in your IoT platform configuration to decode upli
 
 ---
 
+## 📝 Changelog
+
+Every decoder change is recorded in [CHANGELOG.md](CHANGELOG.md). Changes that rename or remove an output field, or change its value or type, are flagged there and announced before publication.
+
+---
+
 ## 📜 License
 
 Each product family is released under the **MIT License**: see the `LICENSE` file in the family folder.  
