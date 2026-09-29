@@ -57,9 +57,12 @@ Decoders/
 │       └── decoderLoRaSigfoxX5.js
 ├── X8 - AIR+ AIR/
 │   ├── decoderAir+.js
-│   ├── decoderAir+_BMS.js
+│   ├── LICENSE
 │   ├── README-General_AIR.md
-│   └── README-Frames_AIR.md
+│   ├── README-Frames_AIR.md
+│   └── BMS/
+│       ├── decoderAir+_BMS.js
+│       └── README-BMS_AIR.md
 ├── X8 - ORIGIN+ ORIGIN GUARD+ GUARD/
 │   ├── decoderOrigin+.js
 │   ├── README-General_ORIGIN-GUARD.md
@@ -83,7 +86,7 @@ Within the X2 and X5 families the per-reference decoder files are identical copi
 | **A3** | FLOW CORE, FLOW PRO | `decoderFlow.js` | [General](A3%20-%20FLOW%20CORE%20FLOW%20PRO/README-General_FLOW.md) · [Frames](A3%20-%20FLOW%20CORE%20FLOW%20PRO/README-Frames_FLOW.md) |
 | **X2** | FEEL+, RISE+, WAVE+, MOVE+, SIGN+, SENSE+, ATMO+ | `decoderX2.js` (per reference)<br>`decoderX2Milesight.js` (Milesight-compatible output) | [General](X2%20-%20FEEL+%20RISE+%20WAVE+%20MOVE+%20SIGN+%20SENSE+%20ATMO+/README_X2_General.md) · [Frames](X2%20-%20FEEL+%20RISE+%20WAVE+%20MOVE+%20SIGN+%20SENSE+%20ATMO+/README_X2_Frames.md) |
 | **X5** | SIGN, WAVE, MOVE, RISE, FEEL, ECHO, VIEW | `decoderLoRaSigfoxX5.js` (per reference) | [General](X5%20-%20SIGN%20WAVE%20MOVE%20RISE%20FEEL%20ECHO%20VIEW/README-General_X5.md) · [Frames](X5%20-%20SIGN%20WAVE%20MOVE%20RISE%20FEEL%20ECHO%20VIEW/README-Frames_X5.md) |
-| **X8** | AIR+, AIR | `decoderAir+.js`<br>`decoderAir+_BMS.js` (raw numeric codes for BMS integration) | [General](X8%20-%20AIR+%20AIR/README-General_AIR.md) · [Frames](X8%20-%20AIR+%20AIR/README-Frames_AIR.md) |
+| **X8** | AIR+, AIR | `decoderAir+.js`<br>`BMS/decoderAir+_BMS.js` (one numeric type per field, for BMS integration) | [General](X8%20-%20AIR+%20AIR/README-General_AIR.md) · [Frames](X8%20-%20AIR+%20AIR/README-Frames_AIR.md) · [BMS](X8%20-%20AIR+%20AIR/BMS/README-BMS_AIR.md) |
 | **X8** | ORIGIN+, ORIGIN, GUARD+, GUARD | `decoderOrigin+.js` | [General](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-General_ORIGIN-GUARD.md) · [Frames](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-Frames_ORIGIN-GUARD.md) |
 | **X9** | TRACK+ | `decoderTrack+.js` | [General](X9%20-%20TRACK+/README-General_TRACK+.md) · [Frames](X9%20-%20TRACK+/README-Frames_TRACK+.md) |
 

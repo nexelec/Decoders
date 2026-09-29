@@ -1,12 +1,19 @@
  /*
  * Payload Decoder LoRa Alliance for AIR+ (X850), AIR (X845) - BMS variant
  * Copyright 2025 Nexelec
- * Version : 1.0.1
+ * Version : 1.0.2
  *
  * Every field has a single type for its whole life (number, or {"value": number, "unit"}),
- * so it can be mapped directly to a BMS point. For a human-readable output use decoderAir+.js.
+ * so it can be mapped directly to a BMS point. For a human-readable output use ../decoderAir+.js.
+ * Documentation: README-BMS_AIR.md
  *
- * Changes from decoderAir+.js 1.0.0:
+ * Changes in 1.0.2:
+ * - remainingProductLifetime: "Value" renamed to "value", like every other measurement
+ * - temperature above 1000 and humidity above 200 (outside the documented range)
+ *   are returned as raw codes, like the error codes, instead of being converted
+ * - a payload shorter than 2 bytes returns "Payload too short" instead of "Unknown message type"
+ *
+ * Changes from decoderAir+.js 1.0.0 to 1.0.1:
  * - coConcentration, temperature and relativeHumidity are always an object
  *   {"value", "unit"}; on error "value" holds the raw error code
  *   (CO: 1023 = Error; temperature: 1022 = Sensor not present, 1023 = Error;
@@ -34,7 +41,11 @@ function decodeUplink(input) {
     // Minimum payload length in bytes for each message type
     var frameLength = [6,5,7,11,2];
 
-    if(input.bytes.length < 2 || octetTypeMessage >= frameLength.length)
+    if(input.bytes.length < 2)
+    {
+        return {"errors": ["Payload too short: " + input.bytes.length + " bytes, at least 2 expected"]};
+    }
+    if(octetTypeMessage >= frameLength.length)
     {
         return {"errors": ["Unknown message type"]};
     }
@@ -160,13 +171,13 @@ function decodeUplink(input) {
 
     function hwRevision(octetHWRevision)
     {
-        // 0 = V000, 1 = V001, 2 = V002, 3 = V003
+        // label = V + code on 3 digits (e.g. 3 = V003)
         return octetHWRevision;
     }
 
     function swRevision(octetSWRevision)
     {
-        // 0 = V0.0, 10 = V1.0
+        // label = V + code x 0.1 (e.g. 10 = V1.0)
         return octetSWRevision;
     }
 
@@ -190,15 +201,17 @@ function decodeUplink(input) {
 
     function temperature(octetTemperatureValue)
     {
-        // 1022 = Sensor not present, 1023 = Error: the raw code is returned as value
-        if(octetTemperatureValue>=1022){return {"value":octetTemperatureValue, "unit":"°C"}}
+        // Above the documented range (0-1000): the raw code is returned as value
+        // (1001-1021 = Out of range, 1022 = Sensor not present, 1023 = Error)
+        if(octetTemperatureValue>1000){return {"value":octetTemperatureValue, "unit":"°C"}}
         else{return {"value":parseFloat(((octetTemperatureValue / 10) - 30).toFixed(2)), "unit":"°C"}}
     }
 
     function humidity(octetHumidityValue)
     {
-        // 254 = Sensor not present, 255 = Error: the raw code is returned as value
-        if(octetHumidityValue>=254){return {"value":octetHumidityValue, "unit" :"%RH"}}
+        // Above the documented range (0-200): the raw code is returned as value
+        // (201-253 = Out of range, 254 = Sensor not present, 255 = Error)
+        if(octetHumidityValue>200){return {"value":octetHumidityValue, "unit" :"%RH"}}
         else{return {"value":parseFloat(((octetHumidityValue *0.5)).toFixed(2)), "unit" :"%RH"}}
     }
 
@@ -248,7 +261,7 @@ function decodeUplink(input) {
         "typeOfMessage": typeOfMessage(octetTypeMessage),
         "hwRevision": hwRevision(hw_version),
         "swRevision": swRevision(sw_version),
-        "remainingProductLifetime" : {"Value":rmg_lifetime,"unit":"month"},
+        "remainingProductLifetime" : {"value":rmg_lifetime,"unit":"month"},
         "coSensorStatus": productHwStatusArgument(co_sensor_status),
         "tempHumSensorStatus": productHwStatusArgument(temp_sensor_status),
         "memoryFault":  productHwStatusArgument(memory_status),

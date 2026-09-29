@@ -1,15 +1,22 @@
  /*
  * Payload Decoder LoRa Alliance for AIR+ (X850), AIR (X845)
  * Copyright 2025 Nexelec
- * Version : 1.0.1
+ * Version : 1.0.2
  *
- * For a BMS integration with raw numeric codes use decoderAir+_BMS.js.
+ * For a BMS integration (one numeric type per field) use BMS/decoderAir+_BMS.js.
  *
- * Changes from 1.0.0:
- * - coConcentration, temperature and relativeHumidity are always an object
- *   {"value", "unit"}; on error "value" holds the raw error code
- *   (CO: 1023 = Error; temperature: 1022 = Sensor not present, 1023 = Error;
- *   humidity: 254 = Sensor not present, 255 = Error)
+ * Changes in 1.0.2:
+ * - measurement errors return a string again, as in 1.0.0: coConcentration 1023 = "Error",
+ *   temperature 1022 = "Sensor not present", 1023 = "Error",
+ *   relativeHumidity 254 = "Sensor not present", 255 = "Error"
+ *   (the numeric error value of 1.0.1 is kept in BMS/decoderAir+_BMS.js only)
+ * - remainingProductLifetime: "Value" renamed to "value", like every other measurement
+ * - swRevision: label is now "V" + code x 0.1 for every code (e.g. 25 = V2.5)
+ * - a payload shorter than 2 bytes returns "Payload too short" instead of "Unknown message type"
+ *
+ * Changes from 1.0.0 to 1.0.1:
+ * - coConcentration, temperature and relativeHumidity errors returned the raw
+ *   error code as {"value", "unit"} (reverted in 1.0.2)
  * - status and configuration fields stay English strings; unmapped codes
  *   return "Unknown" instead of undefined
  * - hushStatus: now "Not active"/"Active" instead of the hardware-fault labels
@@ -32,7 +39,11 @@ function decodeUplink(input) {
     // Minimum payload length in bytes for each message type
     var frameLength = [6,5,7,11,2];
 
-    if(input.bytes.length < 2 || octetTypeMessage >= frameLength.length)
+    if(input.bytes.length < 2)
+    {
+        return {"errors": ["Payload too short: " + input.bytes.length + " bytes, at least 2 expected"]};
+    }
+    if(octetTypeMessage >= frameLength.length)
     {
         return {"errors": ["Unknown message type"]};
     }
@@ -166,11 +177,8 @@ function decodeUplink(input) {
 
     function swRevision(octetSWRevision)
     {
-        switch(octetSWRevision){
-            case 0: return "V0.0";
-            case 10: return "V1.0";
-        }
-        return "Unknown";
+        // label = V + code x 0.1 (e.g. 10 = V1.0)
+        return "V" + (octetSWRevision / 10).toFixed(1);
     }
 
     function pendingJoin(octetPendingJoin)
@@ -181,8 +189,8 @@ function decodeUplink(input) {
 
     function co(octetCoConcentration)
     {
-        // 1023 = Error: the raw code is returned as value
-        return {"value":parseFloat(octetCoConcentration), "unit" :"ppm"}
+        if(octetCoConcentration==1023){return "Error"}
+        else{return {"value":parseFloat(octetCoConcentration), "unit" :"ppm"}}
     }
 
     function testAlarm(octetTestAlarm)
@@ -193,15 +201,15 @@ function decodeUplink(input) {
 
     function temperature(octetTemperatureValue)
     {
-        // 1022 = Sensor not present, 1023 = Error: the raw code is returned as value
-        if(octetTemperatureValue>=1022){return {"value":octetTemperatureValue, "unit":"°C"}}
+        if(octetTemperatureValue>=1023){return "Error"}
+        if(octetTemperatureValue>=1022){return "Sensor not present"}
         else{return {"value":parseFloat(((octetTemperatureValue / 10) - 30).toFixed(2)), "unit":"°C"}}
     }
 
     function humidity(octetHumidityValue)
     {
-        // 254 = Sensor not present, 255 = Error: the raw code is returned as value
-        if(octetHumidityValue>=254){return {"value":octetHumidityValue, "unit" :"%RH"}}
+        if(octetHumidityValue>=255){return "Error"}
+        if(octetHumidityValue>=254){return "Sensor not present"}
         else{return {"value":parseFloat(((octetHumidityValue *0.5)).toFixed(2)), "unit" :"%RH"}}
     }
 
@@ -251,7 +259,7 @@ function decodeUplink(input) {
         "typeOfMessage": typeOfMessage(octetTypeMessage),
         "hwRevision": hwRevision(hw_version),
         "swRevision": swRevision(sw_version),
-        "remainingProductLifetime" : {"Value":rmg_lifetime,"unit":"month"},
+        "remainingProductLifetime" : {"value":rmg_lifetime,"unit":"month"},
         "coSensorStatus": productHwStatusArgument(co_sensor_status),
         "tempHumSensorStatus": productHwStatusArgument(temp_sensor_status),
         "memoryFault":  productHwStatusArgument(memory_status),
