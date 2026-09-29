@@ -1,29 +1,13 @@
-
-// Récupération du payload hexadécimal
-let input = msg.payload.input_text
-
-// Conversion de la chaîne hexadécimale en tableau d’octets
-let bytes = [];
-for (let i = 0; i < input.length; i += 2) {
-    bytes.push(parseInt(input.substr(i, 2), 16));
-}
-
-// Préparation de l’objet attendu par la fonction decodeUplink
-let uplinkInput = {
-    bytes: bytes
-};
-
-var decoded_data = decodeUplink(uplinkInput);
-msg.decoded_data = decoded_data.data;
-// Appel de la fonction principale
-return msg;
-
-
-
 /* 
 * Payload Decoder LoRa Alliance for FEEL+ (X280), RISE+ (X220), WAVE+ (X230), MOVE+ (X290), SIGN+ (X265), SENSE+ (X255), ATMO+ (X260)
 * Copyright 2025 Nexelec
-* Version : 1.0.0
+* Version : 1.0.1
+*
+* Changes in 1.0.1:
+* - removed the Node-RED test wrapper at the top of the file (the file failed to load
+*   on network servers with "SyntaxError: Illegal return statement")
+* - periodWithoutMotion: read on 6 bits from bit 155 (was bits 154-159, shifted by one bit
+*   and including the Presence Alert flag)
 */
 
 function decodeUplink(input) {
@@ -637,7 +621,7 @@ function decodeUplink(input) {
         var data_sensor_on_off_pm = (parseInt(stringHex.substring(38, 39), 16) >> 3) & 0x01;
         var data_sensor_on_off_formaldehyde = (parseInt(stringHex.substring(38, 39), 16) >> 2) & 0x01;
         var data_presence_alerte_on_off = (parseInt(stringHex.substring(38, 39), 16) >> 1) & 0x01;
-        var data_period_without_presence_alerte = (parseInt(stringHex.substring(38, 40), 16)) & 0x3F;
+        var data_period_without_presence_alerte = (parseInt(stringHex.substring(38, 41), 16) >> 3) & 0x3F; // bits 155-160
 
 
         data = {
