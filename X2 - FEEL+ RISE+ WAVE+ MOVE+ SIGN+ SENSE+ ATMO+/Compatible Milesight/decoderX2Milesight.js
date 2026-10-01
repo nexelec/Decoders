@@ -252,7 +252,7 @@ function calibrationActivation(octetCalibrationActivate) {
 }
 function active(octetActive) {
     if (octetActive === 0) { return "off" }
-    else if (octetActive === 1) { return "on " };
+    else if (octetActive === 1) { return "on" };
 }
 function notificationByLEDandBuzzer(octetNotification) {
     if (octetNotification === 0) { return "co2" }
