@@ -1,11 +1,20 @@
 /**
  * Payload Encoder LoRa Alliance for FLOW CORE & FLOW PRO (downlink)
  * Copyright 2026 Nexelec
- * Version : 1.0.0
+ * Version : 1.1.0
  *
  * LoRaWAN downlink encoder / decoder (TS013 "Payload Codec API": encodeDownlink / decodeDownlink)
+ * Legacy entry points are also provided, with the same signatures as the
+ * Milesight codecs (e.g. Milesight-IoT/SensorDecoders wt-series):
+ *   - Encode(fPort, obj)  : ChirpStack v3, Milesight gateway embedded network server
+ *   - Encoder(obj, port)  : The Things Network v2
+ * Both return the byte array only and throw an Error on invalid input.
  *
- * Reference: D1183C_FLOW_Guide_Technique - public (rev. C)
+ * Changes in 1.1.0:
+ * - new command 0x9B: deferred FUOTA mode activation (scheduleFuotaMode)
+ * - legacy entry points Encode() / Encoder()
+ *
+ * Reference: D1183C_FLOW_Guide_Technique - public (rev. C, draft of October 2026)
  *   - frame structure and downlink command list: README-Frames_FLOW.md, section 7
  *
  * Frame format : 0x55 | CmdID | DATA | CmdID | DATA | ...
@@ -65,6 +74,7 @@ var FLOW_COMMANDS = {
   0x97: { len: 1, name: "setFuotaMode" },
   0x98: { len: 1, name: "setValvePositionWhenRegulationOff" },
   0x9a: { len: 1, name: "setSetpointDisplayOrientation" },
+  0x9b: { len: 4, name: "scheduleFuotaMode" },
 };
 
 /* -------------------------------------------------------------------------
@@ -212,6 +222,45 @@ function flowDate(errors, key, value) {
   return [m, d];
 }
 
+/**
+ * Deferred FUOTA activation date -> Unix epoch UTC in seconds, 4 bytes MSB first.
+ * Accepts an epoch in seconds or an ISO 8601 string ("2026-10-01T08:00:00Z");
+ * 0 cancels the pending request. The product only accepts a date between
+ * now - 2 h and now + 7 days: checked here as a warning, since the downlink
+ * may be sent long after it is encoded (class A queue).
+ */
+function flowEpoch(errors, warnings, key, value) {
+  var t;
+  if (typeof value === "string" && !/^\s*\d+\s*$/.test(value)) {
+    t = Date.parse(value);
+    if (isNaN(t)) {
+      errors.push(key + ": epoch in seconds or ISO 8601 date expected, got " + JSON.stringify(value));
+      return null;
+    }
+    if (!/(Z|[+-]\d\d:?\d\d)$/i.test(value.trim())) {
+      warnings.push(key + ": no time zone in " + JSON.stringify(value) + ", read as local time of the codec runtime");
+    }
+    t = Math.floor(t / 1000);
+  } else {
+    t = flowInt(errors, key, value, 0, 0xffffffff);
+    if (t === null) return null;
+  }
+  if (t < 0 || t > 0xffffffff) {
+    errors.push(key + ": date out of range, got " + JSON.stringify(value));
+    return null;
+  }
+  if (t !== 0) {
+    var now = Math.floor(Date.now() / 1000);
+    if (t < now - 2 * 3600 || t > now + 7 * 86400) {
+      warnings.push(
+        key + ": " + new Date(t * 1000).toISOString() +
+        " is outside [now - 2 h, now + 7 days]: the product will reject it"
+      );
+    }
+  }
+  return [(t >>> 24) & 0xff, (t >>> 16) & 0xff, (t >>> 8) & 0xff, t & 0xff];
+}
+
 /* -------------------------------------------------------------------------
  * Encoder
  * ---------------------------------------------------------------------- */
@@ -267,6 +316,10 @@ function encodeDownlink(input) {
 
       case "setFuotaMode": // 0x97
         add(0x97, [flowBool(errors, key, v)]);
+        break;
+
+      case "scheduleFuotaMode": // 0x9B - epoch UTC (s) or ISO date, 0 = cancel
+        add(0x9b, flowEpoch(errors, warnings, key, v));
         break;
 
       /* --- measurement / regulation ---------------------------------- */
@@ -552,11 +605,35 @@ function decodeDownlink(input) {
       case 0x97: data.setFuotaMode = p[0] === 1; break;
       case 0x98: data.setValvePositionWhenRegulationOff = p[0]; break;
       case 0x9a: data.setSetpointDisplayOrientation = p[0] === 1 ? "vertical" : "horizontal"; break;
+      case 0x9b: {
+        var t = ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]) >>> 0;
+        data.scheduleFuotaMode = t === 0 ? 0 : new Date(t * 1000).toISOString().replace(".000Z", "Z");
+        break;
+      }
       default: break;
     }
   }
 
   return { data: data, warnings: warnings, errors: errors };
+}
+
+/* -------------------------------------------------------------------------
+ * Legacy entry points (no errors/warnings channel: invalid input throws).
+ * ---------------------------------------------------------------------- */
+function flowLegacyEncode(obj) {
+  var res = encodeDownlink({ data: obj });
+  if (res.errors.length > 0) throw new Error(res.errors.join("; "));
+  return res.bytes;
+}
+
+// ChirpStack v3, Milesight gateway embedded network server
+function Encode(fPort, obj) {
+  return flowLegacyEncode(obj);
+}
+
+// The Things Network v2
+function Encoder(obj, port) {
+  return flowLegacyEncode(obj);
 }
 
 /* -------------------------------------------------------------------------
@@ -580,9 +657,17 @@ function decodeDownlink(input) {
  *                                                --> 55 82 04 28
  * {"setFuotaMode": true}                         --> 55 97 01
  * {"setSetpointDisplayOrientation": "vertical"}  --> 55 9A 01
+ * {"scheduleFuotaMode": "2026-10-01T08:00:00Z"}  --> 55 9B 6A BE 13 00   (doc example)
+ * {"scheduleFuotaMode": 1790841600}              --> 55 9B 6A BE 13 00
+ * {"scheduleFuotaMode": 0}                       --> 55 9B 00 00 00 00   (cancel)
  * {"sendCustomHexCommand": "7601"}               --> 55 76 01
  * ---------------------------------------------------------------------- */
 
 if (typeof module !== "undefined") {
-  module.exports = { encodeDownlink: encodeDownlink, decodeDownlink: decodeDownlink };
+  module.exports = {
+    encodeDownlink: encodeDownlink,
+    decodeDownlink: decodeDownlink,
+    Encode: Encode,
+    Encoder: Encoder,
+  };
 }

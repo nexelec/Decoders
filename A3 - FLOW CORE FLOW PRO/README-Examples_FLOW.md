@@ -1,6 +1,6 @@
 # FLOW CORE / FLOW PRO — Uplink Examples
 
-Example uplink payloads for every frame type and every version handled by `decoderFlow.js` **1.0.9**, with the output returned by the decoder.
+Example uplink payloads for every frame type and every version handled by `decoderFlow.js` **1.1.0**, with the output returned by the decoder.
 
 > **Synthetic frames.** These payloads are built bit by bit from the layout of [README-Frames_FLOW.md](README-Frames_FLOW.md) with realistic values, then decoded with `decoderFlow.js`. They are meant to validate a decoder integration; they are not captures from devices in the field.
 
@@ -21,11 +21,13 @@ All frames are sent on **FPort 56**. The same list is available in machine-reada
 | S1 | 0x02 | 0 | FLOW CORE | `D220030C9DA7408A8C00E0BECBD0` | FLOW CORE, batteries OK, head on its base, calibrated, NODE One paired |
 | S2 | 0x02 | 0 | FLOW PRO | `D620030C93A4C93A8C01C0E001A0` | FLOW PRO, low battery, head just removed from its base (calibration cleared) |
 | S3 | 0x02 | 0 | FLOW CORE | `D220030C9C3FD08A8C00402A7380` | FLOW CORE, no battery in slot 2 (1021) |
+| S4 | 0x02 | 1 | FLOW CORE | `D221030C9DA7408A8C00E0BECBD0A0` | FLOW CORE, status version 1 with the bootloader version (10) |
 | N1 | 0x03 | 0 | FLOW CORE | `D23001E24044B11C9C` | FLOW CORE with a paired NODE One probe, good radio link |
 | C0 | 0x04 | 0 | FLOW CORE | `D24041062F693AA79955140C85A0000D053D00140000` | FLOW CORE, older firmware, sent at start-up |
 | C1 | 0x04 | 1 | FLOW PRO | `D64121062F693AA79905AA28190B40001A0A7A00280072` | FLOW PRO, after an application downlink (FCnt 57) |
 | C2 | 0x04 | 2 | FLOW CORE | `D242A1062F693AA79905AA28190B40001A0A7A002800013C00` | FLOW CORE, weekly periodic resend, BOOST 30 min |
 | C3 | 0x04 | 3 | FLOW PRO | `D64341062F693AA79905AA28190B40001A0A7A002800013C01` | FLOW PRO, start-up, vertical setpoint display, FUOTA off |
+| C4 | 0x04 | 3 | FLOW PRO | `D64321062F693AA79905AA28190B40001A0A7A002800013C0180` | FLOW PRO, after downlink 0x9B: deferred FUOTA activation pending |
 | D1 | 0x05 | 0 | FLOW CORE | `D25045555554AB555555552AAAAB50` | weekday: comfort 06:30-08:30 and 17:00-22:30, eco otherwise |
 | D2 | 0x06 | 0 | FLOW CORE | `D2604555555552AAAAAAAAAAAAAAD0` | weekend: comfort 08:00-23:00, eco otherwise |
 | D3 | 0x07 | 0 | FLOW CORE | `D27027FFFFFFFFFFFFFFFFFFFFFFF8` | extended absence all day |
@@ -459,6 +461,47 @@ D220030C9C3FD08A8C00402A7380
     },
     "productDate": "02/03/2026 09:00",
     "isD2Dactive": 0
+  }
+}
+```
+
+### S4 — Product status — FLOW CORE, status version 1 with the bootloader version (10)
+
+```
+D221030C9DA7408A8C00E0BECBD0A0
+```
+
+```json
+{
+  "data": {
+    "typeOfProduct": "FLOW CORE",
+    "typeOfMessage": "Product Status",
+    "versionOfMessage": 1,
+    "hardwareVersion": 3,
+    "softwareVersion": 12,
+    "batteryVoltageSlot1": {
+      "value": 3150,
+      "unit": "mV"
+    },
+    "batteryVoltageSlot2": {
+      "value": 3140,
+      "unit": "mV"
+    },
+    "batteryLevel": "high",
+    "statusProduct": "ok",
+    "statusAntiTear": "detected",
+    "statusMotorCalibration": "calibration done",
+    "motorStrokeDistance": {
+      "value": 5400,
+      "unit": "µm"
+    },
+    "timeActivation": {
+      "value": 7,
+      "unit": "month"
+    },
+    "productDate": "29/09/2026 08:30",
+    "isD2Dactive": 1,
+    "bootloaderVersion": 10
   }
 }
 ```
@@ -918,6 +961,127 @@ D64341062F693AA79905AA28190B40001A0A7A002800013C01
     },
     "enableFuota": "off",
     "setpointDisplayOrientation": "vertical"
+  }
+}
+```
+
+### C4 — Configuration v3 — FLOW PRO, after downlink 0x9B: deferred FUOTA activation pending
+
+```
+D64321062F693AA79905AA28190B40001A0A7A002800013C0180
+```
+
+```json
+{
+  "data": {
+    "typeOfProduct": "FLOW PRO",
+    "typeOfMessage": "Product Configuration",
+    "versionOfMessage": 3,
+    "sourceReconfiguration": "downlink",
+    "statusReconfiguration": "total success",
+    "periodPeriodicTransmissionRegulationOn": {
+      "value": 10,
+      "unit": "min"
+    },
+    "periodPeriodicTransmissionRegulationOff": {
+      "value": 60,
+      "unit": "min"
+    },
+    "enableChildLock": "off",
+    "childLockOfflineBehavior": "unchanged when offline",
+    "enableRegulation": "on",
+    "minimumRegulationTemperature": {
+      "value": 15,
+      "unit": "°C"
+    },
+    "maximumRegulationTemperature": {
+      "value": 26,
+      "unit": "°C"
+    },
+    "enableFrostProtect": "on",
+    "frostProtectActivationThreshold": {
+      "value": 7,
+      "unit": "°C"
+    },
+    "enableOpenWindowDetection": "on",
+    "openWindowDetectionTemperatureDrop": {
+      "value": 1,
+      "unit": "°C/min"
+    },
+    "openWindowDetectionPauseDuration": {
+      "value": 30,
+      "unit": "min"
+    },
+    "temperatureInternalOffset": {
+      "value": 0,
+      "unit": "°C"
+    },
+    "regulationTolerance": {
+      "value": 0.5,
+      "unit": "°C/min"
+    },
+    "temperatureModeConfort": {
+      "value": 21,
+      "unit": "°C"
+    },
+    "temperatureModeEco": {
+      "value": 17,
+      "unit": "°C"
+    },
+    "temperatureModeAbsent": {
+      "value": 16,
+      "unit": "°C"
+    },
+    "lowBatteryValveOpeningPercent": {
+      "value": 50,
+      "unit": "%"
+    },
+    "protocolAndRegion": "LR-EU868",
+    "timeZone": "UTC +1",
+    "isJoinPending": "false",
+    "enableNfcDiscover": "off",
+    "kp": 0,
+    "ki": 0,
+    "enableHeatingPeriod": "on",
+    "heatingStartMonth": {
+      "value": 10,
+      "unit": "month"
+    },
+    "heatingStartDay": {
+      "value": 1,
+      "unit": "day"
+    },
+    "heatingEndMonth": {
+      "value": 4,
+      "unit": "month"
+    },
+    "heatingEndDay": {
+      "value": 30,
+      "unit": "day"
+    },
+    "enablePlanningMode": "on",
+    "dailyPlanning": {
+      "monday": "profil 1",
+      "tuesday": "profil 1",
+      "wednesday": "profil 1",
+      "thursday": "profil 1",
+      "friday": "profil 1",
+      "saturday": "profil 2",
+      "sunday": "profil 2"
+    },
+    "downlinkFcnt": 0,
+    "enableBoost": "on",
+    "boostActivationDuration": {
+      "value": 30,
+      "unit": "min"
+    },
+    "valveOpeningPercentControlDisabled": {
+      "value": 0,
+      "unit": "%"
+    },
+    "enableFuota": "off",
+    "setpointDisplayOrientation": "vertical",
+    "isFuotaPending": "true"
   }
 }
 ```
