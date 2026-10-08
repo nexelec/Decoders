@@ -20,6 +20,15 @@ Changes that alter the output of a decoder are marked **⚠ Output change** belo
 
 ## A3 — FLOW CORE / FLOW PRO
 
+### `decoderFlow.js` 1.1.0 — 2026-10-08
+- New field `bootloaderVersion` in the product status frame, version 1 (bits 108–115). Technical guide D1183C draft of October 2026.
+- New field `isFuotaPending` in the product configuration frame, version 3 (bit 200: deferred FUOTA activation scheduled by downlink `0x9B`). Only output when the frame carries it; the first version 3 frames (25 bytes) are decoded as before.
+- New examples S4 (status v1) and C4 (configuration v3 with bit 200) in `README-Examples_FLOW.md` / `examples_FLOW.json`.
+
+### `encoderFlow.js` 1.1.0 — 2026-10-08
+- New command `0x9B` (`scheduleFuotaMode`): deferred FUOTA mode activation at a Unix epoch UTC date (seconds, or ISO 8601 string), `0` cancels the pending request. Technical guide D1183C draft of October 2026.
+- New legacy entry points `Encode(fPort, obj)` (ChirpStack v3, Milesight gateways) and `Encoder(obj, port)` (TTN v2), same signatures as the Milesight codecs. They return the byte array and throw on invalid input. `encodeDownlink` / `decodeDownlink` are unchanged.
+
 ### `decoderFlow.js` 1.0.9 — 2026-09-29
 - ⚠ **Output change:** error codes are returned as strings instead of raw numbers:
   - temperatures (1023), setpoints (63), motor position and motor stroke (8191), activation time (1023): `"Error"`;

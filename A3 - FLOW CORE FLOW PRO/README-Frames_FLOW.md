@@ -2,7 +2,7 @@
 # FLOW CORE / FLOW PRO — Frame Decoding Reference (LoRaWAN Uplink 0x01–0x07)
 
 This document details the **uplink frame structures** of FLOW for LoRaWAN operation, plus the downlink command set.  
-Reference: technical guide **D1183C — revision C** and decoder `decoderFlow.js` **1.0.9**. Downlinks can be built with `encoderFlow.js`; example uplinks are listed in [README-Examples_FLOW.md](README-Examples_FLOW.md).
+Reference: technical guide **D1183C — revision C** (draft of October 2026) and decoder `decoderFlow.js` **1.1.0**. Downlinks can be built with `encoderFlow.js`; example uplinks are listed in [README-Examples_FLOW.md](README-Examples_FLOW.md).
 
 ---
 
@@ -50,7 +50,7 @@ Both versions are handled by `decoderFlow.js`. In version 1, the open-window and
 |--------:|-----------:|-------|-------------|-------|-------|------|
 | 0 | 8 | Product Type | 0xD2 / 0xD6 | — | — | — |
 | 8 | 4 | Message Type | 0x02 | — | — | — |
-| 12 | 4 | Version | 0 | — | — | — |
+| 12 | 4 | Version | 1 | — | — | — |
 | 16 | 8 | HW Version | Hardware version | 0–250 | — | — |
 | 24 | 8 | SW Version | Software version | 0–250 | — | — |
 | 32 | 10 | Battery Voltage Slot 1 | Voltage of battery slot 1 | 0–1000<br>1021 : No battery<br>1022 : Reserved<br>1023 : Error | 5 | mV |
@@ -63,6 +63,16 @@ Both versions are handled by `decoderFlow.js`. In version 1, the open-window and
 | 73 | 10 | Activation Time Counter | Cumulated activation time | 0–1000<br>1023 : Error | 1 | months |
 | 83 | 24 | Date | Product date, in minutes since 01/01/2026 | 0–16777215 | 1 | min |
 | 107 | 1 | NODE One Interconnection | 0 = no NODE One paired, 1 = NODE One paired | — | — | — |
+| 108 | 8 | Bootloader Version | Bootloader version | 0–250 | — | — |
+
+### Version history
+
+| Bits | Version 1 | Version 0 |
+|---|---|---|
+| 0 … 107 | Present | Present, identical to V1 |
+| 108 … 115 | Present | Absent |
+
+> `decoderFlow.js` 1.1.0 outputs the bootloader version as `bootloaderVersion` (raw value, version 1 only).
 
 ---
 
@@ -130,6 +140,7 @@ Transmitted only when a NODE One probe is paired with the head.
 | 191 | 7 | Valve Opening — Regulation OFF | Valve opening while regulation is disabled | 0–100 | 1 | % |
 | 198 | 1 | LoRaWAN FUOTA Mode | 0 = FUOTA inactive, 1 = FUOTA active | — | — | — |
 | 199 | 1 | Setpoint Display Orientation | 0 = horizontal mode, 1 = vertical mode (matches the valve mounting orientation) | — | — | — |
+| 200 | 1 | LoRaWAN FUOTA Scheduling | 0 = no request pending, 1 = deferred FUOTA activation scheduled (downlink `0x9B`) | — | — | — |
 
 ### Version history
 
@@ -137,11 +148,11 @@ Transmitted only when a NODE One probe is paired with the head.
 |---|---|---|---|
 | 0 … 182 | Present | Present | Present, identical to V2 |
 | 183 … 197 | Present | Added in V2 | Absent |
-| 198 … 199 | Added in V3 | Absent | Absent |
+| 198 … 200 | Added in V3 | Absent | Absent |
 
-Version 3 keeps the whole version 2 structure (same order, format and meaning) and only adds bits 198 (FUOTA mode) and 199 (setpoint display orientation).
+Version 3 keeps the whole version 2 structure (same order, format and meaning) and only adds bits 198 (FUOTA mode), 199 (setpoint display orientation) and 200 (FUOTA scheduling). Bit 200 was added later: the first version 3 frames are 25 bytes long and stop at bit 199.
 
-> `decoderFlow.js` 1.0.9 implements configuration versions **0, 1, 2 and 3**. Version 3 outputs the two new fields as `enableFuota` and `setpointDisplayOrientation`.
+> `decoderFlow.js` 1.1.0 implements configuration versions **0, 1, 2 and 3**. Version 3 outputs the new fields as `enableFuota`, `setpointDisplayOrientation` and `isFuotaPending`; `isFuotaPending` is only output when the frame carries bit 200 (26 bytes).
 
 ---
 
@@ -210,10 +221,13 @@ Downlink layout: header **0x55**, then one or more `Command ID + DATA` pairs, se
 | 0x97 | 1 | 0/1 | 0 = disabled, 1 = enabled | Enable / disable FUOTA mode |
 | 0x98 | 1 | 0–100 | 0–100 % | Valve opening while regulation is disabled |
 | 0x9A | 1 | 0/1 | 0 = horizontal mode, 1 = vertical mode | Setpoint display orientation |
+| 0x9B | 4 | 0 or Unix epoch | Unix epoch UTC in seconds, MSB first, between now − 2 h and now + 7 days<br>0 = cancel the pending request | Deferred FUOTA mode activation: at the scheduled time the product behaves as if it had received `0x97` |
 
 **Example — enable Child Lock:** `55 76 01`
 
-`encoderFlow.js` builds these frames from JSON (`encodeDownlink`) and parses them back (`decodeDownlink`), e.g. `{"setChildLock": true}` → `55 76 01`, `{"setSetpointDisplayOrientation": "vertical"}` → `55 9A 01`. Command IDs are sorted automatically and out-of-range values are rejected.
+**Example — enter FUOTA mode on 01/10/2026 at 08:00 UTC:** `55 9B 6A BE 13 00`
+
+`encoderFlow.js` builds these frames from JSON (`encodeDownlink`) and parses them back (`decodeDownlink`), e.g. `{"setChildLock": true}` → `55 76 01`, `{"setSetpointDisplayOrientation": "vertical"}` → `55 9A 01`, `{"scheduleFuotaMode": "2026-10-01T08:00:00Z"}` (or the epoch `1790841600`) → `55 9B 6A BE 13 00`. Command IDs are sorted automatically and out-of-range values are rejected. A `0x9B` date outside [now − 2 h, now + 7 days] only raises a warning, as the downlink may be sent later than it is encoded.
 
 ---
 

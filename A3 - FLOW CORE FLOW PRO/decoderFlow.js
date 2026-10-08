@@ -1,7 +1,12 @@
 /* 
 * Payload Decoder LoRa Alliance for FLOW CORE & FLOW PRO
 * Copyright 2026 Nexelec
-* Version : 1.0.9
+* Version : 1.1.0
+*
+* Changes in 1.1.0 (technical guide D1183C, draft of October 2026):
+* - product status version 1: new field bootloaderVersion (bits 108-115)
+* - product configuration version 3: new field isFuotaPending (bit 200, deferred FUOTA
+*   activation requested by downlink 0x9B), only output when the frame carries it
 *
 * Changes in 1.0.9:
 * - error codes are returned as strings, as in the technical guide, instead of raw numbers:
@@ -362,6 +367,10 @@ function decodeUplink(input) {
             "isD2Dactive": (data_interco_with_node)
         };
 
+        // version 1: bootloader version on bits 108-115
+        if (octetVersionMessage >= 1 && stringHex.length >= 29) {
+            data["bootloaderVersion"] = parseInt(stringHex.substring(27, 29), 16);
+        }
 
         return data;
     }
@@ -780,6 +789,11 @@ function decodeUplink(input) {
                 "enableFuota" : onOff(data_enable_fuota),
                 "setpointDisplayOrientation" : setpointDisplayOrientation(data_setpoint_display_orientation)
             };
+
+            // bit 200: deferred FUOTA activation pending (absent from the first version 3 frames, 25 bytes)
+            if (stringHex.length >= 51) {
+                data["isFuotaPending"] = trueFalse((parseInt(stringHex.substring(50, 51), 16) >> 3) & 0x01);
+            }
 
         }
         return data
