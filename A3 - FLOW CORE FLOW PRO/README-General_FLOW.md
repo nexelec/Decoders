@@ -194,7 +194,7 @@ The full command list is given in [README-Frames_FLOW.md](README-Frames_FLOW.md)
 
 - Decoder file: `decoderFlow.js` (version 1.1.0), LoRa Alliance `decodeUplink()` signature.
 - Downlink encoder: `encoderFlow.js` (version 1.1.0), LoRa Alliance `encodeDownlink()` / `decodeDownlink()` signatures, full revision C command set. The legacy `Encode(fPort, obj)` (ChirpStack v3, Milesight gateways) and `Encoder(obj, port)` (TTN v2) entry points are also provided; they return the byte array and throw on invalid input.
-- Example uplinks for every frame type and version: [README-Examples_FLOW.md](README-Examples_FLOW.md) / `examples_FLOW.json`.
+- Codec examples (uplinks for every frame type and version, downlink encode / decode): [README-Examples_FLOW.md](README-Examples_FLOW.md) / [`examples.json`](examples.json) (LoRa Alliance TS013-1.0.0 format).
 - Product byte 0xD2 is reported as `FLOW CORE`, 0xD6 as `FLOW PRO` (before version 1.0.8: `FLOW` and `FLOW+`).
 - Message type and message version share byte 1 (4 bits each); the decoder branches on both.
 - Frame versions found on products in the field: periodic data **version 1**, product status **versions 0 and 1**, product configuration **versions 1, 2 and 3**. Version 0 of the periodic and configuration frames is still decoded for completeness.

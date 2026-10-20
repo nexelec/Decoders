@@ -1,10 +1,13 @@
 [
   {
-    "id": "P1",
-    "title": "Periodic v1 — FLOW CORE, comfort mode on schedule, 21.3 °C for a 21 °C setpoint",
-    "fPort": 56,
-    "payload": "D211806A2032992464",
-    "decoded": {
+    "type": "uplink",
+    "description": "P1 — Periodic v1 — FLOW CORE, comfort mode on schedule, 21.3 °C for a 21 °C setpoint",
+    "input": {
+      "bytes": [210, 17, 128, 106, 32, 50, 153, 36, 100],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Periodic",
@@ -36,11 +39,14 @@
     }
   },
   {
-    "id": "P2",
-    "title": "Periodic v1 — FLOW PRO, regulating on a NODE One probe, eco mode, setpoint changed with the wheel",
-    "fPort": 56,
-    "payload": "D6117CA65F844B0246",
-    "decoded": {
+    "type": "uplink",
+    "description": "P2 — Periodic v1 — FLOW PRO, regulating on a NODE One probe, eco mode, setpoint changed with the wheel",
+    "input": {
+      "bytes": [214, 17, 124, 166, 95, 132, 75, 2, 70],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Periodic",
@@ -72,11 +78,14 @@
     }
   },
   {
-    "id": "P3",
-    "title": "Periodic v1 — FLOW CORE, open window detected (regulation paused, valve closed)",
-    "fPort": 56,
-    "payload": "D21173AA1CC200000E",
-    "decoded": {
+    "type": "uplink",
+    "description": "P3 — Periodic v1 — FLOW CORE, open window detected (regulation paused, valve closed)",
+    "input": {
+      "bytes": [210, 17, 115, 170, 28, 194, 0, 0, 14],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Periodic",
@@ -108,11 +117,14 @@
     }
   },
   {
-    "id": "P4",
-    "title": "Periodic v1 — FLOW PRO, BOOST triggered by downlink (valve fully open)",
-    "fPort": 56,
-    "payload": "D611796A1E59450C8C",
-    "decoded": {
+    "type": "uplink",
+    "description": "P4 — Periodic v1 — FLOW PRO, BOOST triggered by downlink (valve fully open)",
+    "input": {
+      "bytes": [214, 17, 121, 106, 30, 89, 69, 12, 140],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Periodic",
@@ -144,11 +156,14 @@
     }
   },
   {
-    "id": "P5",
-    "title": "Periodic v1 — FLOW CORE, clock not set: degraded mode, setpoint forced to 19.5 °C",
-    "fPort": 56,
-    "payload": "D2117AE71EBA834382",
-    "decoded": {
+    "type": "uplink",
+    "description": "P5 — Periodic v1 — FLOW CORE, clock not set: degraded mode, setpoint forced to 19.5 °C",
+    "input": {
+      "bytes": [210, 17, 122, 231, 30, 186, 131, 67, 130],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Periodic",
@@ -180,11 +195,14 @@
     }
   },
   {
-    "id": "P6",
-    "title": "Periodic v1 — FLOW CORE, temperature sensor error (1023), regulation off",
-    "fPort": 56,
-    "payload": "D211FFE83FF0000000",
-    "decoded": {
+    "type": "uplink",
+    "description": "P6 — Periodic v1 — FLOW CORE, temperature sensor error (1023), regulation off",
+    "input": {
+      "bytes": [210, 17, 255, 232, 63, 240, 0, 0, 0],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Periodic",
@@ -210,11 +228,14 @@
     }
   },
   {
-    "id": "P7",
-    "title": "Periodic v0 — FLOW CORE, older firmware, normal regulation",
-    "fPort": 56,
-    "payload": "D2107D681F522EE150",
-    "decoded": {
+    "type": "uplink",
+    "description": "P7 — Periodic v0 — FLOW CORE, older firmware, normal regulation",
+    "input": {
+      "bytes": [210, 16, 125, 104, 31, 82, 46, 225, 80],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Periodic",
@@ -247,11 +268,14 @@
     }
   },
   {
-    "id": "P8",
-    "title": "Periodic v0 — FLOW PRO, older firmware, open window flag set",
-    "fPort": 56,
-    "payload": "D61071AA1C63000000",
-    "decoded": {
+    "type": "uplink",
+    "description": "P8 — Periodic v0 — FLOW PRO, older firmware, open window flag set",
+    "input": {
+      "bytes": [214, 16, 113, 170, 28, 99, 0, 0, 0],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Periodic",
@@ -284,11 +308,14 @@
     }
   },
   {
-    "id": "S1",
-    "title": "Product status — FLOW CORE, batteries OK, head on its base, calibrated, NODE One paired",
-    "fPort": 56,
-    "payload": "D220030C9DA7408A8C00E0BECBD0",
-    "decoded": {
+    "type": "uplink",
+    "description": "S1 — Product status — FLOW CORE, batteries OK, head on its base, calibrated, NODE One paired",
+    "input": {
+      "bytes": [210, 32, 3, 12, 157, 167, 64, 138, 140, 0, 224, 190, 203, 208],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Product Status",
@@ -321,11 +348,14 @@
     }
   },
   {
-    "id": "S2",
-    "title": "Product status — FLOW PRO, low battery, head just removed from its base (calibration cleared)",
-    "fPort": 56,
-    "payload": "D620030C93A4C93A8C01C0E001A0",
-    "decoded": {
+    "type": "uplink",
+    "description": "S2 — Product status — FLOW PRO, low battery, head just removed from its base (calibration cleared)",
+    "input": {
+      "bytes": [214, 32, 3, 12, 147, 164, 201, 58, 140, 1, 192, 224, 1, 160],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Product Status",
@@ -358,11 +388,14 @@
     }
   },
   {
-    "id": "S3",
-    "title": "Product status — FLOW CORE, no battery in slot 2 (1021)",
-    "fPort": 56,
-    "payload": "D220030C9C3FD08A8C00402A7380",
-    "decoded": {
+    "type": "uplink",
+    "description": "S3 — Product status — FLOW CORE, no battery in slot 2 (1021)",
+    "input": {
+      "bytes": [210, 32, 3, 12, 156, 63, 208, 138, 140, 0, 64, 42, 115, 128],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Product Status",
@@ -392,11 +425,14 @@
     }
   },
   {
-    "id": "S4",
-    "title": "Product status — FLOW CORE, status version 1 with the bootloader version (10)",
-    "fPort": 56,
-    "payload": "D221030C9DA7408A8C00E0BECBD0A0",
-    "decoded": {
+    "type": "uplink",
+    "description": "S4 — Product status — FLOW CORE, status version 1 with the bootloader version (10)",
+    "input": {
+      "bytes": [210, 33, 3, 12, 157, 167, 64, 138, 140, 0, 224, 190, 203, 208, 160],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Product Status",
@@ -430,11 +466,14 @@
     }
   },
   {
-    "id": "N1",
-    "title": "NODE One status — FLOW CORE with a paired NODE One probe, good radio link",
-    "fPort": 56,
-    "payload": "D23001E24044B11C9C",
-    "decoded": {
+    "type": "uplink",
+    "description": "N1 — NODE One status — FLOW CORE with a paired NODE One probe, good radio link",
+    "input": {
+      "bytes": [210, 48, 1, 226, 64, 68, 177, 28, 156],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "External Probe Status",
@@ -456,11 +495,14 @@
     }
   },
   {
-    "id": "C0",
-    "title": "Configuration v0 — FLOW CORE, older firmware, sent at start-up",
-    "fPort": 56,
-    "payload": "D24041062F693AA79955140C85A0000D053D00140000",
-    "decoded": {
+    "type": "uplink",
+    "description": "C0 — Configuration v0 — FLOW CORE, older firmware, sent at start-up",
+    "input": {
+      "bytes": [210, 64, 65, 6, 47, 105, 58, 167, 153, 85, 20, 12, 133, 160, 0, 13, 5, 61, 0, 20, 0, 0],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Product Configuration",
@@ -543,11 +585,14 @@
     }
   },
   {
-    "id": "C1",
-    "title": "Configuration v1 — FLOW PRO, after an application downlink (FCnt 57)",
-    "fPort": 56,
-    "payload": "D64121062F693AA79905AA28190B40001A0A7A00280072",
-    "decoded": {
+    "type": "uplink",
+    "description": "C1 — Configuration v1 — FLOW PRO, after an application downlink (FCnt 57)",
+    "input": {
+      "bytes": [214, 65, 33, 6, 47, 105, 58, 167, 153, 5, 170, 40, 25, 11, 64, 0, 26, 10, 122, 0, 40, 0, 114],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Product Configuration",
@@ -634,11 +679,14 @@
     }
   },
   {
-    "id": "C2",
-    "title": "Configuration v2 — FLOW CORE, weekly periodic resend, BOOST 30 min",
-    "fPort": 56,
-    "payload": "D242A1062F693AA79905AA28190B40001A0A7A002800013C00",
-    "decoded": {
+    "type": "uplink",
+    "description": "C2 — Configuration v2 — FLOW CORE, weekly periodic resend, BOOST 30 min",
+    "input": {
+      "bytes": [210, 66, 161, 6, 47, 105, 58, 167, 153, 5, 170, 40, 25, 11, 64, 0, 26, 10, 122, 0, 40, 0, 1, 60, 0],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Product Configuration",
@@ -749,11 +797,14 @@
     }
   },
   {
-    "id": "C3",
-    "title": "Configuration v3 — FLOW PRO, start-up, vertical setpoint display, FUOTA off",
-    "fPort": 56,
-    "payload": "D64341062F693AA79905AA28190B40001A0A7A002800013C01",
-    "decoded": {
+    "type": "uplink",
+    "description": "C3 — Configuration v3 — FLOW PRO, start-up, vertical setpoint display, FUOTA off",
+    "input": {
+      "bytes": [214, 67, 65, 6, 47, 105, 58, 167, 153, 5, 170, 40, 25, 11, 64, 0, 26, 10, 122, 0, 40, 0, 1, 60, 1],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Product Configuration",
@@ -866,11 +917,14 @@
     }
   },
   {
-    "id": "C4",
-    "title": "Configuration v3 — FLOW PRO, after downlink 0x9B: deferred FUOTA activation pending",
-    "fPort": 56,
-    "payload": "D64321062F693AA79905AA28190B40001A0A7A002800013C0180",
-    "decoded": {
+    "type": "uplink",
+    "description": "C4 — Configuration v3 — FLOW PRO, after downlink 0x9B: deferred FUOTA activation pending",
+    "input": {
+      "bytes": [214, 67, 33, 6, 47, 105, 58, 167, 153, 5, 170, 40, 25, 11, 64, 0, 26, 10, 122, 0, 40, 0, 1, 60, 1, 128],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW PRO",
         "typeOfMessage": "Product Configuration",
@@ -984,11 +1038,14 @@
     }
   },
   {
-    "id": "D1",
-    "title": "Daily profile 1 — weekday: comfort 06:30-08:30 and 17:00-22:30, eco otherwise",
-    "fPort": 56,
-    "payload": "D25045555554AB555555552AAAAB50",
-    "decoded": {
+    "type": "uplink",
+    "description": "D1 — Daily profile 1 — weekday: comfort 06:30-08:30 and 17:00-22:30, eco otherwise",
+    "input": {
+      "bytes": [210, 80, 69, 85, 85, 84, 171, 85, 85, 85, 85, 42, 170, 171, 80],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Daily profil n°1",
@@ -1047,11 +1104,14 @@
     }
   },
   {
-    "id": "D2",
-    "title": "Daily profile 2 — weekend: comfort 08:00-23:00, eco otherwise",
-    "fPort": 56,
-    "payload": "D2604555555552AAAAAAAAAAAAAAD0",
-    "decoded": {
+    "type": "uplink",
+    "description": "D2 — Daily profile 2 — weekend: comfort 08:00-23:00, eco otherwise",
+    "input": {
+      "bytes": [210, 96, 69, 85, 85, 85, 82, 170, 170, 170, 170, 170, 170, 170, 208],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Daily profil n°2",
@@ -1110,11 +1170,14 @@
     }
   },
   {
-    "id": "D3",
-    "title": "Daily profile 3 — extended absence all day",
-    "fPort": 56,
-    "payload": "D27027FFFFFFFFFFFFFFFFFFFFFFF8",
-    "decoded": {
+    "type": "uplink",
+    "description": "D3 — Daily profile 3 — extended absence all day",
+    "input": {
+      "bytes": [210, 112, 39, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 248],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
       "data": {
         "typeOfProduct": "FLOW CORE",
         "typeOfMessage": "Daily profil n°3",
@@ -1170,6 +1233,569 @@
         "temperatureSlot23h00_23h30": "absent temperature",
         "temperatureSlot23h30_00h00": "absent temperature"
       }
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE1 — Child lock on",
+    "input": {
+      "data": {
+        "setChildLock": true
+      }
+    },
+    "output": {
+      "bytes": [85, 118, 1],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE2 — Manual setpoint 19.5 °C",
+    "input": {
+      "data": {
+        "setTargetTemperature": 19.5
+      }
+    },
+    "output": {
+      "bytes": [85, 138, 39],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE3 — Setpoint limits 16-24 °C",
+    "input": {
+      "data": {
+        "setMinTemperature": 16,
+        "setMaxTemperature": 24
+      }
+    },
+    "output": {
+      "bytes": [85, 119, 32, 120, 48],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE4 — Open window detection on, delta 1.5 °C, pause 15 min",
+    "input": {
+      "data": {
+        "setOpenWindowDetection": true,
+        "setOpenWindowDelta": 1.5,
+        "setOpenWindowPauseDuration": 15
+      }
+    },
+    "output": {
+      "bytes": [85, 115, 1, 116, 15, 117, 15],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE5 — Temperature offset -1.5 °C",
+    "input": {
+      "data": {
+        "setTemperatureOffset": -1.5
+      }
+    },
+    "output": {
+      "bytes": [85, 114, 35],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE6 — Commands given in any order are sent in ascending ID order (period 30 min, UTC+1, configuration request)",
+    "input": {
+      "data": {
+        "setUplinkPeriodRegulationOn": 30,
+        "setTimeZone": 1,
+        "getConfiguration": ""
+      }
+    },
+    "output": {
+      "bytes": [85, 1, 99, 13, 134, 3],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE7 — Heating season on, from October 15 to April 15",
+    "input": {
+      "data": {
+        "setHeatingSeason": true,
+        "setHeatingSeasonStart": {
+          "month": 10,
+          "day": 15
+        },
+        "setHeatingSeasonEnd": {
+          "month": 4,
+          "day": 15
+        }
+      }
+    },
+    "output": {
+      "bytes": [85, 127, 1, 128, 10, 15, 129, 4, 15],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE8 — Weekly schedule: profile 1 on weekdays except Wednesday (profile 2), profile 3 on weekends",
+    "input": {
+      "data": {
+        "setWeeklySchedule": {
+          "monday": 1,
+          "tuesday": 1,
+          "wednesday": 2,
+          "thursday": 1,
+          "friday": 1,
+          "saturday": 3,
+          "sunday": 3
+        }
+      }
+    },
+    "output": {
+      "bytes": [85, 130, 4, 40],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE9 — Daily profile 1: comfort 06:30-08:30 and 17:00-22:30, eco otherwise",
+    "input": {
+      "data": {
+        "setDailyProfile1": [
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "eco",
+          "eco",
+          "eco"
+        ]
+      }
+    },
+    "output": {
+      "bytes": [85, 131, 170, 170, 170, 149, 106, 170, 170, 170, 165, 85, 85, 106],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE10 — BOOST for 30 min",
+    "input": {
+      "data": {
+        "setBoost": true,
+        "setBoostDuration": 30
+      }
+    },
+    "output": {
+      "bytes": [85, 144, 1, 145, 30],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE11 — Delayed network join in 24 h (1440 min)",
+    "input": {
+      "data": {
+        "setDelayedNetworkJoin": 1440
+      }
+    },
+    "output": {
+      "bytes": [85, 28, 0, 144],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE12 — Motor recalibration",
+    "input": {
+      "data": {
+        "recalibrateMotor": ""
+      }
+    },
+    "output": {
+      "bytes": [85, 140],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE13 — Vertical setpoint display",
+    "input": {
+      "data": {
+        "setSetpointDisplayOrientation": "vertical"
+      }
+    },
+    "output": {
+      "bytes": [85, 154, 1],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE14 — Raw command (escape hatch): child lock on",
+    "input": {
+      "data": {
+        "sendCustomHexCommand": "7601"
+      }
+    },
+    "output": {
+      "bytes": [85, 118, 1],
+      "fPort": 56,
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE15 — Warning: setpoint 20.3 °C rounded to the 0.5 °C step (20.5 °C)",
+    "input": {
+      "data": {
+        "setTargetTemperature": 20.3
+      }
+    },
+    "output": {
+      "bytes": [85, 138, 41],
+      "fPort": 56,
+      "warnings": [
+        "setTargetTemperature: 20.3C is not a multiple of 0.5C, rounded to 20.5C"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE16 — Error: setpoint out of range (35 °C, max 31 °C)",
+    "input": {
+      "data": {
+        "setTargetTemperature": 35
+      }
+    },
+    "output": {
+      "bytes": [],
+      "fPort": 56,
+      "warnings": [],
+      "errors": [
+        "setTargetTemperature: out of range (0C..31C), got 35C"
+      ]
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE17 — Error: unknown command",
+    "input": {
+      "data": {
+        "setColor": "red"
+      }
+    },
+    "output": {
+      "bytes": [],
+      "fPort": 56,
+      "warnings": [],
+      "errors": [
+        "unknown command \"setColor\""
+      ]
+    }
+  },
+  {
+    "type": "downlink-encode",
+    "description": "DE18 — Error: no command",
+    "input": {
+      "data": {}
+    },
+    "output": {
+      "bytes": [],
+      "fPort": 56,
+      "warnings": [],
+      "errors": [
+        "empty downlink: no command provided"
+      ]
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD1 — Child lock on",
+    "input": {
+      "bytes": [85, 118, 1],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "setChildLock": true
+      },
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD2 — Configuration request, UTC+1, period 30 min",
+    "input": {
+      "bytes": [85, 1, 99, 13, 134, 3],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "getConfiguration": "",
+        "setTimeZone": 1,
+        "setUplinkPeriodRegulationOn": 30
+      },
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD3 — Heating season on, from October 15 to April 15",
+    "input": {
+      "bytes": [85, 127, 1, 128, 10, 15, 129, 4, 15],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "setHeatingSeason": true,
+        "setHeatingSeasonStart": {
+          "month": 10,
+          "day": 15
+        },
+        "setHeatingSeasonEnd": {
+          "month": 4,
+          "day": 15
+        }
+      },
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD4 — Weekly schedule",
+    "input": {
+      "bytes": [85, 130, 4, 40],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "setWeeklySchedule": {
+          "monday": 1,
+          "tuesday": 1,
+          "wednesday": 2,
+          "thursday": 1,
+          "friday": 1,
+          "saturday": 3,
+          "sunday": 3
+        }
+      },
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD5 — Daily profile 1: comfort 06:30-08:30 and 17:00-22:30, eco otherwise",
+    "input": {
+      "bytes": [85, 131, 170, 170, 170, 149, 106, 170, 170, 170, 165, 85, 85, 106],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "setDailyProfile1": [
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "eco",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "comfort",
+          "eco",
+          "eco",
+          "eco"
+        ]
+      },
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD6 — Factory reset",
+    "input": {
+      "bytes": [85, 75, 1],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "factoryReset": ""
+      },
+      "warnings": [],
+      "errors": []
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD7 — Error: bad header (0x56 instead of 0x55)",
+    "input": {
+      "bytes": [86, 118, 1],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "raw": "567601"
+      },
+      "warnings": [],
+      "errors": [
+        "bad header: expected 0x55, got 0x56"
+      ]
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD8 — Error: unknown command ID 0xFF",
+    "input": {
+      "bytes": [85, 118, 1, 255, 1],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {
+        "setChildLock": true,
+        "raw": "557601FF01"
+      },
+      "warnings": [],
+      "errors": [
+        "unknown command ID 0xFF at offset 3"
+      ]
+    }
+  },
+  {
+    "type": "downlink-decode",
+    "description": "DD9 — Error: truncated command (0x80 needs 2 bytes)",
+    "input": {
+      "bytes": [85, 128, 10],
+      "fPort": 56,
+      "recvTime": "2026-10-20T10:00:00.000+02:00"
+    },
+    "output": {
+      "data": {},
+      "warnings": [],
+      "errors": [
+        "truncated payload for command setHeatingSeasonStart"
+      ]
     }
   }
 ]

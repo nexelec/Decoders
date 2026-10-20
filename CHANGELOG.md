@@ -20,6 +20,11 @@ Changes that alter the output of a decoder are marked **⚠ Output change** belo
 
 ## A3 — FLOW CORE / FLOW PRO
 
+### Examples — 2026-10-20
+- `examples_FLOW.json` replaced by `examples.json` in the LoRa Alliance format (TS013-1.0.0 §6.2.1 "Payload Examples"): each entry is `{ "type": "uplink", "description", "input": { "bytes", "fPort", "recvTime" }, "output" }`, the payload given as a byte array and `output` being the exact `decodeUplink` result. Same 21 frames, no decoder change.
+- New downlink examples for `encoderFlow.js` in the same file: 19 `downlink-encode` (`input.data` → `output.bytes`, `fPort`, `warnings`, `errors`) and 10 `downlink-decode` (`input.bytes` → `output.data`), including rounding warnings and error cases. No encoder change.
+- `README-Examples_FLOW.md` shows each example as its `examples.json` entry (hex payload kept for convenience); every `output` is the exact codec result, so the file can be run as a test suite.
+
 ### `decoderFlow.js` 1.1.0 — 2026-10-08
 - New field `bootloaderVersion` in the product status frame, version 1 (bits 108–115). Technical guide D1183C draft of October 2026.
 - New field `isFuotaPending` in the product configuration frame, version 3 (bit 200: deferred FUOTA activation scheduled by downlink `0x9B`). Only output when the frame carries it; the first version 3 frames (25 bytes) are decoded as before.

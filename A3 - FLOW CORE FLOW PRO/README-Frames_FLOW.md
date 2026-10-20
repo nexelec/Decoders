@@ -2,7 +2,7 @@
 # FLOW CORE / FLOW PRO — Frame Decoding Reference (LoRaWAN Uplink 0x01–0x07)
 
 This document details the **uplink frame structures** of FLOW for LoRaWAN operation, plus the downlink command set.  
-Reference: technical guide **D1183C — revision C** (draft of October 2026) and decoder `decoderFlow.js` **1.1.0**. Downlinks can be built with `encoderFlow.js`; example uplinks are listed in [README-Examples_FLOW.md](README-Examples_FLOW.md).
+Reference: technical guide **D1183C — revision C** (draft of October 2026) and decoder `decoderFlow.js` **1.1.0**. Downlinks can be built with `encoderFlow.js`; uplink and downlink examples are listed in [README-Examples_FLOW.md](README-Examples_FLOW.md).
 
 ---
 
@@ -227,7 +227,7 @@ Downlink layout: header **0x55**, then one or more `Command ID + DATA` pairs, se
 
 **Example — enter FUOTA mode on 01/10/2026 at 08:00 UTC:** `55 9B 6A BE 13 00`
 
-`encoderFlow.js` builds these frames from JSON (`encodeDownlink`) and parses them back (`decodeDownlink`), e.g. `{"setChildLock": true}` → `55 76 01`, `{"setSetpointDisplayOrientation": "vertical"}` → `55 9A 01`, `{"scheduleFuotaMode": "2026-10-01T08:00:00Z"}` (or the epoch `1790841600`) → `55 9B 6A BE 13 00`. Command IDs are sorted automatically and out-of-range values are rejected. A `0x9B` date outside [now − 2 h, now + 7 days] only raises a warning, as the downlink may be sent later than it is encoded.
+`encoderFlow.js` builds these frames from JSON (`encodeDownlink`) and parses them back (`decodeDownlink`); the downlink examples of [README-Examples_FLOW.md](README-Examples_FLOW.md) cover each kind of parameter (boolean, setpoint, date, schedule, profile) and the error cases. E.g. `{"setChildLock": true}` → `55 76 01`, `{"setSetpointDisplayOrientation": "vertical"}` → `55 9A 01`, `{"scheduleFuotaMode": "2026-10-01T08:00:00Z"}` (or the epoch `1790841600`) → `55 9B 6A BE 13 00`. Command IDs are sorted automatically and out-of-range values are rejected. A `0x9B` date outside [now − 2 h, now + 7 days] only raises a warning, as the downlink may be sent later than it is encoded.
 
 ---
 
