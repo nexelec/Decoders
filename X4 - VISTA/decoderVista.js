@@ -197,6 +197,11 @@ function decodeUplink(input) {
         return message_name[octetAntiTear];
     }
 
+    /* 5 mV step, 2000 mV offset */
+    function lowBatterieThreshold(octetLowBatterie) {
+        return { "value": (octetLowBatterie * 5) + 2000, "unit": "mV" };
+    }
+
     /* ------------------------------------------------------------------ */
     /* Configuration                                                       */
     /* ------------------------------------------------------------------ */
@@ -379,6 +384,7 @@ function decodeUplink(input) {
         var data_activation_time = bitsValue(46, 10);
         var data_co2_last_manual_calibration_time = bitsValue(56, 8);
         var data_hw_status_anti_tear = bitsValue(64, 2);
+        var data_low_threshold_batterie = bitsValue(66, 8);
         var data_bootloader_version = bitsValue(74, 8);
 
         var data = headerOutput();
@@ -390,6 +396,7 @@ function decodeUplink(input) {
         data.timeActivation = productActivationTimeCounter(data_activation_time);
         data.timeCo2LastCalibration = co2LastCalibrationTime(data_co2_last_manual_calibration_time);
         data.statusAntiTear = antiTearArgument(data_hw_status_anti_tear);
+        data.lowBatterieThreshold = lowBatterieThreshold(data_low_threshold_batterie);
         data.bootloaderVersion = data_bootloader_version;
         return data;
     }
