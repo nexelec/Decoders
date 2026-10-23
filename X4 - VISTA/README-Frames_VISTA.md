@@ -127,7 +127,7 @@ Same layout for every product.
 | 46 | 10 | Activation Time Counter | Cumulated activation time | 0–1000<br>1023 : Error | 1 | months | `timeActivation` |
 | 56 | 8 | Time Since Last Manual CO2 Calibration | Days since the last manual calibration; always 255 on SPACE, FEEL and MOVE | 0–250<br>255 : Error | 1 | days | `timeCo2LastCalibration` |
 | 64 | 2 | Anti-Tear Status | 0 = base not detected, 1 = base detected, 2 = just removed from the base, 3 = just installed on the base | — | — | — | `statusAntiTear` |
-| 66 | 8 | Low Battery Threshold | 5 mV resolution, 2000 mV offset | 0–250 | 5 | mV | *not output* |
+| 66 | 8 | Reserved | — | — | — | — | — |
 | 74 | 8 | Bootloader Version | Bootloader version | 0–250 | — | — | `bootloaderVersion` |
 
 ---
