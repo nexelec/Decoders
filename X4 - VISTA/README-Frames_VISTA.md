@@ -41,7 +41,6 @@ Reference: technical guide **D1196A — revision A** (21/10/2026) and decoder `d
 | 12 | 4 | Version | Message version | 0–15 | — | — | `versionOfMessage` |
 | 16 | 10 | Temperature | 30 °C offset | 0–1000 | 0.1 | °C | `temperature` |
 | 26 | 10 | Humidity | Relative humidity | 0–1000 | 0.1 | %RH | `humidity` |
-| 36 | 1 | Reserved | — | — | — | — | — |
 
 ### VISTA MOVE (0xD8)
 
@@ -127,7 +126,7 @@ Same layout for every product.
 | 46 | 10 | Activation Time Counter | Cumulated activation time | 0–1000<br>1023 : Error | 1 | months | `timeActivation` |
 | 56 | 8 | Time Since Last Manual CO2 Calibration | Days since the last manual calibration; always 255 on SPACE, FEEL and MOVE | 0–250<br>255 : Error | 1 | days | `timeCo2LastCalibration` |
 | 64 | 2 | Anti-Tear Status | 0 = base not detected, 1 = base detected, 2 = just removed from the base, 3 = just installed on the base | — | — | — | `statusAntiTear` |
-| 66 | 8 | Low Battery Threshold | 5 mV resolution, 2000 mV offset | 0–250 | 5 | mV | *not output* |
+| 66 | 8 | Low Battery Threshold | 5 mV resolution, 2000 mV offset (2000–2550 mV) | 0–110 | 5 | mV | *not output* |
 | 74 | 8 | Bootloader Version | Bootloader version | 0–250 | — | — | `bootloaderVersion` |
 
 ---

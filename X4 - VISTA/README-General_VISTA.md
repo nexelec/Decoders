@@ -110,12 +110,12 @@ VISTA also supports **L2D1**, the Nexelec direct radio protocol, used for exampl
 - LED indicator and orange level are both disabled by default and can be enabled separately.
 
 ### Motion detection (SPACE, MOVE, WAVE)
-- PIR sensor, range up to 5.5 m, 120° coverage, continuous measurement.
+- PIR sensor, range up to 6 m, 120° coverage, continuous measurement.
 - **Presence alert:** a frame 0x7 "occupied" is sent as soon as motion is detected; after **30 minutes** (configurable 5–60 min) without motion, a frame 0x7 "vacant" is sent.
 - **Activity index:** 0 (no activity) to 100 (high activity), reported in the periodic frame.
 
 ### NFC
-- Configuration, last measurements and firmware update through the **NFC TOUCH** application (Android, iOS). Works through the packaging and when the product is off.
+- Configuration and firmware update through the **NFC TOUCH** application (Android, iOS). Works through the packaging and when the product is off.
 - The NFC interface can be made non-discoverable by downlink to prevent local reconfiguration after deployment.
 
 ---
