@@ -63,6 +63,15 @@ Changes that alter the output of a decoder are marked **⚠ Output change** belo
 
 ---
 
+## X4 — VISTA SPACE / FEEL / MOVE / WAVE / RISE
+
+### `decoderVista.js` 1.0.0 — 2026-10-23
+- First decoder, technical guide D1196A (21/10/2026), port 56: periodic data, CO2 / temperature / humidity historical data, product status, product configuration (one layout per product) and presence alert.
+- Output field names follow the FLOW and X2 decoders (`statusProduct`, `timeActivation`, `downlinkFcnt`, `enableFuota`, `isFuotaPending`, `bootloaderVersion`…).
+- New documentation `README-General_VISTA.md` and `README-Frames_VISTA.md` (bit-level structure of every frame, downlink command list).
+
+---
+
 ## X5 — SIGN / WAVE / MOVE / RISE / FEEL / ECHO / VIEW
 
 ### 2025-11-17

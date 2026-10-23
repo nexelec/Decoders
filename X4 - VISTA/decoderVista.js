@@ -1,15 +1,18 @@
 /*
-* Payload Decoder LoRa Alliance for VISTA SPACE (X410LS), VISTA FEEL (X420LS), VISTA MOVE (X430LS), VISTA WAVE (X440LS)
+* Payload Decoder LoRa Alliance for VISTA SPACE (X410LS), VISTA FEEL (X420LS), VISTA MOVE (X430LS),
+* VISTA WAVE (X440LS), VISTA RISE (X450LS)
 * Copyright 2026 Nexelec
 * Version : 1.0.0
 *
-* Reference : D1196 - Guide technique VISTA LoRaWAN - V3 (EU868)
+* Reference : D1196A - Guide technique VISTA LoRaWAN (21/10/2026)
 * Uplink / downlink port : 56
 *
 * Frame layout reminder :
-*   byte 0        : product type (0xDA SPACE, 0xD7 FEEL, 0xD8 MOVE, 0xD9 WAVE)
+*   byte 0        : product type (0xDA SPACE, 0xD7 FEEL, 0xD8 MOVE, 0xD9 WAVE, 0xDB RISE)
 *   byte 1 [7..4] : message type   byte 1 [3..0] : message version
 *   next bits     : payload, MSB first, fields are NOT byte aligned
+*
+* Output field names follow the FLOW and X2 decoders.
 */
 
 function decodeUplink(input) {
@@ -35,25 +38,17 @@ function decodeUplink(input) {
     }
 
     /*
-    * Generic bit field reader.
-    * offset : position of the first bit of the field in the frame (bit 0 = MSB of byte 0)
+    * Reads a bit field.
+    * offset : position of the first bit of the field in the frame (bit 0 = MSB of byte 0),
+    *          as given in the "Décalage" column of the technical guide
     * size   : field length in bits (1 to 16)
-    * Handles fields spanning several bytes and several fields packed in one byte.
     */
     function bitsValue(offset, size) {
         var firstNibble = Math.floor(offset / 4);
         var lastNibble = Math.floor((offset + size - 1) / 4);
-
-        if (lastNibble >= stringHex.length) { return null }
-
-        var chunk = stringHex.substring(firstNibble, lastNibble + 1);
         var shift = ((lastNibble + 1) * 4) - (offset + size);
 
-        return (parseInt(chunk, 16) >>> shift) & ((1 << size) - 1);
-    }
-
-    function frameBitLength() {
-        return stringHex.length * 4;
+        return (parseInt(stringHex.substring(firstNibble, lastNibble + 1), 16) >>> shift) & ((1 << size) - 1);
     }
 
     function dataOutput(octetTypeMessage) {
@@ -68,11 +63,12 @@ function decodeUplink(input) {
     }
 
     function typeOfProduct(octetTypeProduit) {
-        if (octetTypeProduit == 0xD7) { return "VISTA FEEL LoRa" }
-        if (octetTypeProduit == 0xD8) { return "VISTA MOVE LoRa" }
-        if (octetTypeProduit == 0xD9) { return "VISTA WAVE LoRa" }
-        if (octetTypeProduit == 0xDA) { return "VISTA SPACE LoRa" }
-        return "unknown product";
+        if (octetTypeProduit == 0xDA) { return "VISTA SPACE" }
+        if (octetTypeProduit == 0xD7) { return "VISTA FEEL" }
+        if (octetTypeProduit == 0xD8) { return "VISTA MOVE" }
+        if (octetTypeProduit == 0xD9) { return "VISTA WAVE" }
+        if (octetTypeProduit == 0xDB) { return "VISTA RISE" }
+        return "Reserved";
     }
 
     function typeOfMessage(octetTypeMessage) {
@@ -81,29 +77,34 @@ function decodeUplink(input) {
         return message_name[octetTypeMessage];
     }
 
+    function headerOutput() {
+        return {
+            "typeOfProduct": typeOfProduct(octetTypeProduit),
+            "typeOfMessage": typeOfMessage(octetTypeMessage),
+            "versionOfMessage": octetVersionMessage
+        };
+    }
+
     /* ------------------------------------------------------------------ */
-    /* Measurement formatting                                              */
+    /* Measurements                                                        */
     /* ------------------------------------------------------------------ */
 
     function temperature(octetTemperatureValue) {
-        if (octetTemperatureValue === null) { return "missing data" }
         if (octetTemperatureValue >= 1023) { return "error" }
         if (octetTemperatureValue >= 1022) { return "deconnected sensor" }
         if (octetTemperatureValue >= 1021) { return "desactivated sensor" }
-        else { return { "value": parseFloat(((octetTemperatureValue / 10) - 30).toFixed(1)), "unit": "°C" } }
+        else { return { "value": Math.round(((octetTemperatureValue / 10) - 30) * 10) / 10, "unit": "°C" } }
     }
 
     function humidity(octetHumidityValue) {
-        if (octetHumidityValue === null) { return "missing data" }
         if (octetHumidityValue >= 1023) { return "error" }
         if (octetHumidityValue >= 1022) { return "deconnected sensor" }
         if (octetHumidityValue >= 1021) { return "desactivated sensor" }
-        else { return { "value": parseFloat((octetHumidityValue / 10).toFixed(1)), "unit": "%RH" } }
+        else { return { "value": octetHumidityValue / 10, "unit": "%RH" } }
     }
 
-    /* Periodic CO2 : 14 bits, 1 ppm resolution */
+    /* Periodic data: 14 bits, 1 ppm */
     function co2(octetCO2Value) {
-        if (octetCO2Value === null) { return "missing data" }
         if (octetCO2Value >= 16383) { return "error" }
         if (octetCO2Value >= 16382) { return "deconnected sensor" }
         if (octetCO2Value >= 16381) { return "desactivated sensor" }
@@ -112,7 +113,6 @@ function decodeUplink(input) {
     }
 
     function luminosity(octetLuminosityValue) {
-        if (octetLuminosityValue === null) { return "missing data" }
         if (octetLuminosityValue >= 1023) { return "error" }
         if (octetLuminosityValue >= 1022) { return "deconnected sensor" }
         if (octetLuminosityValue >= 1021) { return "desactivated sensor" }
@@ -120,235 +120,25 @@ function decodeUplink(input) {
     }
 
     function activityIndex(octetActivityIndex) {
-        if (octetActivityIndex === null) { return "missing data" }
         if (octetActivityIndex >= 127) { return "error" }
         if (octetActivityIndex >= 126) { return "deconnected sensor" }
         if (octetActivityIndex >= 125) { return "desactivated sensor" }
         else { return { "value": octetActivityIndex, "unit": "%" } }
     }
 
-    function buttonPress(octetButtonValue) {
-        if (octetButtonValue === null) { return "missing data" }
-        if (octetButtonValue === 0) { return "none" }
-        else { return "short" }
-    }
-
-    /* Periodic frame flag : 0 = absence, 1 = presence */
+    /* Periodic data flag: 0 = absence, 1 = presence */
     function presence(octetPresence) {
-        if (octetPresence === null) { return "missing data" }
-        var message_name = ["absence", "presence"]
+        var message_name = ["absent", "presence"]
         return message_name[octetPresence];
     }
 
-    /* Presence alert frame : 0 = occupied, 1 = vacant */
-    function roomStatus(octetRoomStatus) {
-        if (octetRoomStatus === null) { return "missing data" }
-        var message_name = ["occupied", "vacant"]
-        return message_name[octetRoomStatus];
+    /* Presence alert: 0 = occupied, 1 = vacant (inverted compared with the periodic flag) */
+    function presenceAlert(octetPresence) {
+        var message_name = ["presence", "absent"]
+        return message_name[octetPresence];
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Status formatting                                                   */
-    /* ------------------------------------------------------------------ */
-
-    function batteryVoltage(octetBatteryVoltage) {
-        if (octetBatteryVoltage === null) { return "missing data" }
-        if (octetBatteryVoltage >= 1023) { return "error" }
-        if (octetBatteryVoltage >= 1022) { return "Reserved" }
-        else { return { "value": (octetBatteryVoltage * 5), "unit": "mV" } }
-    }
-
-    function batterieLevelArgument(octetBatteryLevel) {
-        if (octetBatteryLevel === null) { return "missing data" }
-        var message_name = ["high", "medium", "low", "critical", "Reserved", "Reserved", "Reserved", "Reserved"]
-        return message_name[octetBatteryLevel];
-    }
-
-    function productHwStatusArgument(octetProductHwStatus) {
-        if (octetProductHwStatus === null) { return "missing data" }
-        var message_name = ["ok", "error"]
-        return message_name[octetProductHwStatus];
-    }
-
-    function productActivationTimeCounter(octetTimeCounter) {
-        if (octetTimeCounter === null) { return "missing data" }
-        if (octetTimeCounter >= 1023) { return "error" }
-        else { return { "value": octetTimeCounter, "unit": "month" } }
-    }
-
-    function lastManualCalibration(octetDays) {
-        if (octetDays === null) { return "missing data" }
-        if (octetDays >= 255) { return "error" }
-        else { return { "value": octetDays, "unit": "days" } }
-    }
-
-    function antiTearArgument(octetAntiTear) {
-        if (octetAntiTear === null) { return "missing data" }
-        var message_name = ["base not detected", "base detected", "just removed from the base", "just installed on the base"]
-        return message_name[octetAntiTear];
-    }
-
-    function lowBatterieThreshold(octetLowBatterie) {
-        if (octetLowBatterie === null) { return "missing data" }
-        return { "value": (octetLowBatterie * 5) + 2000, "unit": "mV" };
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* Configuration formatting                                            */
-    /* ------------------------------------------------------------------ */
-
-    function reconfigurationSource(octetReconfigurationSource) {
-        if (octetReconfigurationSource === null) { return "missing data" }
-        if (octetReconfigurationSource == 0) { return "nfc" }
-        if (octetReconfigurationSource == 1) { return "downlink" }
-        if (octetReconfigurationSource == 2) { return "start-up" }
-        if (octetReconfigurationSource == 5) { return "local" }
-        else { return "Reserved" }
-    }
-
-    function reconfigurationState(octetReconfigurationState) {
-        if (octetReconfigurationState === null) { return "missing data" }
-        var message_name = ["total success", "partial success", "total failure", "Reserved"]
-        return message_name[octetReconfigurationState];
-    }
-
-    function loraRegion(octetLoRaRegion) {
-        if (octetLoRaRegion === null) { return "missing data" }
-        if (octetLoRaRegion == 1) { return "lorawan-eu868" }
-        if (octetLoRaRegion == 2) { return "lorawan-us915" }
-        if (octetLoRaRegion == 4) { return "lorawan-au915" }
-        if (octetLoRaRegion == 6) { return "lorawan-in865" }
-        else { return "Reserved" }
-    }
-
-    function active(octetActive) {
-        if (octetActive === null) { return "missing data" }
-        var message_name = ["off", "on"]
-        return message_name[octetActive];
-    }
-
-    function period(octetPeriod) {
-        if (octetPeriod === null) { return "missing data" }
-        return { "value": octetPeriod, "unit": "minutes" };
-    }
-
-    /* Datalog transmission period : 10 minutes step */
-    function transmissionPeriodHistorical(octetPeriodHistorical) {
-        if (octetPeriodHistorical === null) { return "missing data" }
-        if (octetPeriodHistorical >= 255) { return "error" }
-        else { return { "value": (octetPeriodHistorical * 10), "unit": "minutes" } }
-    }
-
-    /* Delta CO2 : 8 bits, 0-250 mapped on 0-1000 ppm (4 ppm step) */
-    function deltaCO2(octetDeltaCO2) {
-        if (octetDeltaCO2 === null) { return "missing data" }
-        if (octetDeltaCO2 === 255) { return "desactivated" }
-        else { return { "value": (octetDeltaCO2 * 4), "unit": "ppm" } }
-    }
-
-    /* Delta temperature : 7 bits, 0.1 °C step */
-    function deltaTemp(octetDeltaTemp) {
-        if (octetDeltaTemp === null) { return "missing data" }
-        if (octetDeltaTemp === 127) { return "desactivated" }
-        else { return { "value": parseFloat((octetDeltaTemp * 0.1).toFixed(1)), "unit": "°C" } }
-    }
-
-    /* CO2 LED thresholds : 10 bits, 5 ppm step */
-    function co2Threshold(octetCO2Threshold) {
-        if (octetCO2Threshold === null) { return "missing data" }
-        return { "value": (octetCO2Threshold * 5), "unit": "ppm" };
-    }
-
-    function pendingJoin(octetPending) {
-        if (octetPending === null) { return "missing data" }
-        var message_name = ["no join programmed", "join programmed"]
-        return message_name[octetPending];
-    }
-
-    function nfcStatus(octetNfcStatus) {
-        if (octetNfcStatus === null) { return "missing data" }
-        var message_name = ["discoverable", "no discoverable", "Reserved", "Reserved"]
-        return message_name[octetNfcStatus];
-    }
-
-    function counter(octetCounter) {
-        if (octetCounter === null) { return "missing data" }
-        return octetCounter;
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* 0x01 - Periodic data                                                */
-    /* ------------------------------------------------------------------ */
-
-    function periodicDataOutput() {
-        var data = {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage
-        };
-
-        if (octetTypeProduit == 0xDA) {                                 // SPACE : 5 bytes
-            data.luminosity = luminosity(bitsValue(16, 10));
-            data.buttonPress = buttonPress(bitsValue(26, 1));
-            data.activityIndex = activityIndex(bitsValue(27, 7));
-            data.presence = presence(bitsValue(34, 1));
-        }
-        else if (octetTypeProduit == 0xD7) {                            // FEEL : 5 bytes
-            data.temperature = temperature(bitsValue(16, 10));
-            data.humidity = humidity(bitsValue(26, 10));
-            data.buttonPress = buttonPress(bitsValue(36, 1));
-        }
-        else if (octetTypeProduit == 0xD8) {                            // MOVE : 7 bytes
-            data.temperature = temperature(bitsValue(16, 10));
-            data.humidity = humidity(bitsValue(26, 10));
-            data.luminosity = luminosity(bitsValue(36, 10));
-            data.buttonPress = buttonPress(bitsValue(46, 1));
-            data.activityIndex = activityIndex(bitsValue(47, 7));
-            data.presence = presence(bitsValue(54, 1));
-        }
-        else if (octetTypeProduit == 0xD9) {                            // WAVE : 9 bytes
-            data.temperature = temperature(bitsValue(16, 10));
-            data.humidity = humidity(bitsValue(26, 10));
-            data.co2 = co2(bitsValue(36, 14));
-            data.luminosity = luminosity(bitsValue(50, 10));
-            data.buttonPress = buttonPress(bitsValue(60, 1));
-            data.activityIndex = activityIndex(bitsValue(61, 7));
-            data.presence = presence(bitsValue(68, 1));
-        }
-        return data;
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* 0x02 / 0x03 / 0x04 - Historical data (datalog)                      */
-    /* Measures are 10 bits each, from the most recent to the oldest       */
-    /* ------------------------------------------------------------------ */
-
-    function historicalDataOutput(convert) {
-        var numberOfMeasures = bitsValue(16, 6);
-        var periodBetweenMeasures = bitsValue(22, 8);
-        var repetition = bitsValue(30, 6);
-        var measures = [];
-
-        if (numberOfMeasures !== null) {
-            for (var i = 0; i < numberOfMeasures; i++) {
-                var offset = 36 + (10 * i);
-                if ((offset + 10) > frameBitLength()) { break }
-                measures.push(convert(bitsValue(offset, 10)));
-            }
-        }
-
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "numberOfMeasures": counter(numberOfMeasures),
-            "periodBetweenMeasure": transmissionPeriodHistorical(periodBetweenMeasures),
-            "redundancy": counter(repetition),
-            "measures": measures
-        };
-    }
-
-    /* Historical CO2 : 10 bits, 5 ppm resolution */
+    /* Historical data: 10 bits per measure, values without unit (the unit is given once for the array) */
     function historicalCO2(octetCO2Value) {
         if (octetCO2Value >= 1023) { return "error" }
         if (octetCO2Value >= 1022) { return "deconnected sensor" }
@@ -361,60 +151,258 @@ function decodeUplink(input) {
         if (octetTemperatureValue >= 1023) { return "error" }
         if (octetTemperatureValue >= 1022) { return "deconnected sensor" }
         if (octetTemperatureValue >= 1021) { return "desactivated sensor" }
-        else { return parseFloat(((octetTemperatureValue / 10) - 30).toFixed(1)) }
+        else { return Math.round(((octetTemperatureValue / 10) - 30) * 10) / 10 }
     }
 
     function historicalHumidity(octetHumidityValue) {
         if (octetHumidityValue >= 1023) { return "error" }
         if (octetHumidityValue >= 1022) { return "deconnected sensor" }
         if (octetHumidityValue >= 1021) { return "desactivated sensor" }
-        else { return parseFloat((octetHumidityValue / 10).toFixed(1)) }
+        else { return octetHumidityValue / 10 }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Status                                                              */
+    /* ------------------------------------------------------------------ */
+
+    function batteryVoltage(octetbatteryVoltage) {
+        if (octetbatteryVoltage === 1023) { return "error" }
+        else if (octetbatteryVoltage === 1022) { return "Reserved" }
+        else { return { "value": (octetbatteryVoltage * 5), "unit": "mV" } }
+    }
+
+    function batterieLevelArgument(octetBatteryLevel) {
+        var message_name = ["high", "medium", "low", "critical", "Reserved", "Reserved", "Reserved", "Reserved"]
+        return message_name[octetBatteryLevel];
+    }
+
+    function productHwStatusArgument(octetProductHwStatus) {
+        var message_name = ["ok", "error"]
+        return message_name[octetProductHwStatus];
+    }
+
+    function productActivationTimeCounter(octetTimeCounter) {
+        if (octetTimeCounter === 1023) { return "error" }
+        else { return { "value": octetTimeCounter, "unit": "month" } }
+    }
+
+    /* 255 = error, also always sent by the products without CO2 sensor (SPACE, FEEL, MOVE) */
+    function co2LastCalibrationTime(octetDays) {
+        if (octetDays === 255) { return "error" }
+        else { return { "value": octetDays, "unit": "days" } }
+    }
+
+    function antiTearArgument(octetAntiTear) {
+        var message_name = ["not detected", "detected", "just removed from the base", "just installed on the base"]
+        return message_name[octetAntiTear];
+    }
+
+    /* 5 mV step, 2000 mV offset */
+    function lowBatterieThreshold(octetLowBatterie) {
+        return { "value": (octetLowBatterie * 5) + 2000, "unit": "mV" };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Configuration                                                       */
+    /* ------------------------------------------------------------------ */
+
+    function reconfigurationSource(octetReconfigurationSource) {
+        if (octetReconfigurationSource == 0) { return "nfc" }
+        if (octetReconfigurationSource == 1) { return "downlink" }
+        if (octetReconfigurationSource == 2) { return "start up" }
+        if (octetReconfigurationSource == 5) { return "periodic" }
+        else { return "Reserved" }
+    }
+
+    function reconfigurationState(octetReconfigurationState) {
+        var message_name = ["total success", "partial success", "total failure", "Reserved"]
+        return message_name[octetReconfigurationState];
+    }
+
+    function protocolAndRegion(octetRegion) {
+        if (octetRegion == 1) { return "LR-EU868" }
+        else { return "Reserved" }
+    }
+
+    function active(octetActive) {
+        var message_name = ["off", "on"]
+        return message_name[octetActive];
+    }
+
+    function trueFalse(octetTrue) {
+        var message_name = ["false", "true"]
+        return message_name[octetTrue];
+    }
+
+    function period(octetPeriod) {
+        return { "value": octetPeriod, "unit": "minutes" };
+    }
+
+    /* Datalog: 10 minutes step */
+    function transmissionPeriodHistorical(octetPeriodHistorical) {
+        if (octetPeriodHistorical === 255) { return "error" }
+        else { return { "value": (octetPeriodHistorical * 10), "unit": "minutes" } }
+    }
+
+    /* 4 ppm step */
+    function deltaCO2(octetDeltaCO2) {
+        if (octetDeltaCO2 === 255) { return "desactivated" }
+        else { return { "value": (octetDeltaCO2 * 4), "unit": "ppm" } }
+    }
+
+    /* 0.1 °C step */
+    function deltaTemp(octetDeltaTemp) {
+        if (octetDeltaTemp === 127) { return "desactivated" }
+        else { return { "value": octetDeltaTemp / 10, "unit": "°C" } }
+    }
+
+    /* 5 ppm step */
+    function co2Threshold(octetCO2Threshold) {
+        return { "value": octetCO2Threshold * 5, "unit": "ppm" };
+    }
+
+    function pendingJoin(octetPending) {
+        var message_name = ["no join programmed", "join programmed"]
+        return message_name[octetPending];
+    }
+
+    function nfcStatus(octetNfcStatus) {
+        var message_name = ["discoverable", "no discoverable", "Reserved", "Reserved"]
+        return message_name[octetNfcStatus];
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 0x1 - Periodic data                                                 */
+    /* ------------------------------------------------------------------ */
+
+    function periodicDataOutput() {
+        var data = headerOutput();
+
+        if (octetTypeProduit == 0xDA) {                                 // SPACE
+            var data_luminosity = bitsValue(16, 10);
+            var data_activity_index = bitsValue(27, 7);
+            var data_presence = bitsValue(34, 1);
+
+            data.luminosity = luminosity(data_luminosity);
+            data.activityIndex = activityIndex(data_activity_index);
+            data.presence = presence(data_presence);
+        }
+        else if (octetTypeProduit == 0xD7) {                            // FEEL
+            var data_temperature = bitsValue(16, 10);
+            var data_humidity = bitsValue(26, 10);
+
+            data.temperature = temperature(data_temperature);
+            data.humidity = humidity(data_humidity);
+        }
+        else if (octetTypeProduit == 0xD8) {                            // MOVE
+            var data_temperature = bitsValue(16, 10);
+            var data_humidity = bitsValue(26, 10);
+            var data_luminosity = bitsValue(36, 10);
+            var data_activity_index = bitsValue(47, 7);
+            var data_presence = bitsValue(54, 1);
+
+            data.temperature = temperature(data_temperature);
+            data.humidity = humidity(data_humidity);
+            data.luminosity = luminosity(data_luminosity);
+            data.activityIndex = activityIndex(data_activity_index);
+            data.presence = presence(data_presence);
+        }
+        else if (octetTypeProduit == 0xD9) {                            // WAVE
+            var data_temperature = bitsValue(16, 10);
+            var data_humidity = bitsValue(26, 10);
+            var data_co2 = bitsValue(36, 14);
+            var data_luminosity = bitsValue(50, 10);
+            var data_activity_index = bitsValue(61, 7);
+            var data_presence = bitsValue(68, 1);
+
+            data.temperature = temperature(data_temperature);
+            data.humidity = humidity(data_humidity);
+            data.co2 = co2(data_co2);
+            data.luminosity = luminosity(data_luminosity);
+            data.activityIndex = activityIndex(data_activity_index);
+            data.presence = presence(data_presence);
+        }
+        else if (octetTypeProduit == 0xDB) {                            // RISE
+            var data_temperature = bitsValue(16, 10);
+            var data_humidity = bitsValue(26, 10);
+            var data_co2 = bitsValue(36, 14);
+
+            data.temperature = temperature(data_temperature);
+            data.humidity = humidity(data_humidity);
+            data.co2 = co2(data_co2);
+        }
+        return data;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 0x2 / 0x3 / 0x4 - Historical data (FEEL, MOVE, WAVE, RISE)          */
+    /* Measures on 10 bits from bit 36, from the most recent to the oldest */
+    /* ------------------------------------------------------------------ */
+
+    function historicalDataOutput(name, convert, unit) {
+        var data_nombre_mesures = bitsValue(16, 6);
+        var data_time_between_measurement = bitsValue(22, 8);
+        var data_repetition = bitsValue(30, 6);
+        var mesure = [];
+
+        for (var i = 0; i < data_nombre_mesures; i++) {
+            var offset_binaire = 36 + (10 * i);
+            if ((offset_binaire + 10) > (stringHex.length * 4)) { break }
+            mesure.push(convert(bitsValue(offset_binaire, 10)));
+        }
+
+        var data = headerOutput();
+        data.newMeasure = data_nombre_mesures;
+        data.periodBetweenMeasure = { "value": data_time_between_measurement * 10, "unit": "minutes" };
+        data.redundancy = data_repetition;
+        data[name] = { "value": mesure, "unit": unit };
+        return data;
     }
 
     function historicalCO2DataOutput() {
-        var data = historicalDataOutput(historicalCO2);
-        data.co2 = { "value": data.measures, "unit": "ppm" };
-        delete data.measures;
-        return data;
+        return historicalDataOutput("co2", historicalCO2, "ppm");
     }
 
     function historicalTemperatureDataOutput() {
-        var data = historicalDataOutput(historicalTemperature);
-        data.temperature = { "value": data.measures, "unit": "°C" };
-        delete data.measures;
-        return data;
+        return historicalDataOutput("temperature", historicalTemperature, "°C");
     }
 
     function historicalHumidityDataOutput() {
-        var data = historicalDataOutput(historicalHumidity);
-        data.humidity = { "value": data.measures, "unit": "%RH" };
-        delete data.measures;
+        return historicalDataOutput("humidity", historicalHumidity, "%RH");
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 0x5 - Product status (all products)                                 */
+    /* ------------------------------------------------------------------ */
+
+    function productStatusDataOutput() {
+        var data_hw_version = bitsValue(16, 8);
+        var data_sw_version = bitsValue(24, 8);
+        var data_battery_voltage = bitsValue(32, 10);
+        var data_battery_level = bitsValue(42, 3);
+        var data_hw_status = bitsValue(45, 1);
+        var data_activation_time = bitsValue(46, 10);
+        var data_co2_last_manual_calibration_time = bitsValue(56, 8);
+        var data_hw_status_anti_tear = bitsValue(64, 2);
+        var data_low_threshold_batterie = bitsValue(66, 8);
+        var data_bootloader_version = bitsValue(74, 8);
+
+        var data = headerOutput();
+        data.hardwareVersion = data_hw_version;
+        data.softwareVersion = data_sw_version;
+        data.batteryVoltage = batteryVoltage(data_battery_voltage);
+        data.batteryLevel = batterieLevelArgument(data_battery_level);
+        data.statusProduct = productHwStatusArgument(data_hw_status);
+        data.timeActivation = productActivationTimeCounter(data_activation_time);
+        data.timeCo2LastCalibration = co2LastCalibrationTime(data_co2_last_manual_calibration_time);
+        data.statusAntiTear = antiTearArgument(data_hw_status_anti_tear);
+        data.lowBatterieThreshold = lowBatterieThreshold(data_low_threshold_batterie);
+        data.bootloaderVersion = data_bootloader_version;
         return data;
     }
 
     /* ------------------------------------------------------------------ */
-    /* 0x05 - Product status (all products, 10 bytes)                      */
-    /* ------------------------------------------------------------------ */
-
-    function productStatusDataOutput() {
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "hardwareVersion": counter(bitsValue(16, 8)),
-            "softwareVersion": counter(bitsValue(24, 8)),
-            "batteryVoltage": batteryVoltage(bitsValue(32, 10)),
-            "batteryLevel": batterieLevelArgument(bitsValue(42, 3)),
-            "statusProduct": productHwStatusArgument(bitsValue(45, 1)),
-            "timeActivation": productActivationTimeCounter(bitsValue(46, 10)),
-            "timeCo2LastCalibration": lastManualCalibration(bitsValue(56, 8)),
-            "statusAntiTear": antiTearArgument(bitsValue(64, 2)),
-            "lowBatterieThreshold": lowBatterieThreshold(bitsValue(66, 8))
-        };
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* 0x06 - Product configuration (layout depends on the product)        */
+    /* 0x6 - Product configuration (layout depends on the product)        */
     /* ------------------------------------------------------------------ */
 
     function productConfigurationDataOutput() {
@@ -422,131 +410,248 @@ function decodeUplink(input) {
         if (octetTypeProduit == 0xD7) { return feelConfigurationDataOutput() }
         if (octetTypeProduit == 0xD8) { return moveConfigurationDataOutput() }
         if (octetTypeProduit == 0xD9) { return waveConfigurationDataOutput() }
-        return { "typeOfProduct": typeOfProduct(octetTypeProduit), "typeOfMessage": typeOfMessage(octetTypeMessage) };
+        if (octetTypeProduit == 0xDB) { return riseConfigurationDataOutput() }
+        return headerOutput();
     }
 
-    /* SPACE : 9 bytes */
     function spaceConfigurationDataOutput() {
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "reconfigurationSource": reconfigurationSource(bitsValue(16, 3)),
-            "reconfigurationStatus": reconfigurationState(bitsValue(19, 2)),
-            "periodMeasure": period(bitsValue(21, 5)),
-            "enableMotion": active(bitsValue(26, 1)),
-            "enableButtonPressNotification": active(bitsValue(27, 1)),
-            "protocolAndRegion": loraRegion(bitsValue(28, 4)),
-            "enablePeriodicData": active(bitsValue(32, 1)),
-            "periodPeriodicTransmission": period(bitsValue(33, 6)),
-            "pendingJoin": pendingJoin(bitsValue(39, 1)),
-            "enableNfcDiscover": nfcStatus(bitsValue(40, 2)),
-            "downlinkFcnt": counter(bitsValue(42, 16)),
-            "enableRoomPresence": active(bitsValue(58, 1)),
-            "periodWithoutMotion": period(bitsValue(59, 6))
-        };
+        var data_config_source = bitsValue(16, 3);
+        var data_config_status = bitsValue(19, 2);
+        var data_sensor_on_off_pir = bitsValue(21, 1);
+        var data_lora_region = bitsValue(23, 4);
+        var data_periodic_tx_on_off = bitsValue(27, 1);
+        var data_periodic_tx_period = bitsValue(28, 6);
+        var data_pending_join = bitsValue(34, 1);
+        var data_nfc_status = bitsValue(35, 2);
+        var data_downlink_fcnt = bitsValue(37, 16);
+        var data_presence_alerte_on_off = bitsValue(53, 1);
+        var data_period_without_presence_alerte = bitsValue(54, 6);
+        var data_enable_fuota = bitsValue(60, 1);
+        var data_fuota_pending = bitsValue(61, 1);
+
+        var data = headerOutput();
+        data.reconfigurationSource = reconfigurationSource(data_config_source);
+        data.reconfigurationStatus = reconfigurationState(data_config_status);
+        data.enableMotion = active(data_sensor_on_off_pir);
+        data.protocolAndRegion = protocolAndRegion(data_lora_region);
+        data.enablePeriodicData = active(data_periodic_tx_on_off);
+        data.periodPeriodicTransmission = period(data_periodic_tx_period);
+        data.pendingJoin = pendingJoin(data_pending_join);
+        data.enableNfcDiscover = nfcStatus(data_nfc_status);
+        data.downlinkFcnt = data_downlink_fcnt;
+        data.enableRoomPresence = active(data_presence_alerte_on_off);
+        data.periodWithoutMotion = period(data_period_without_presence_alerte);
+        data.enableFuota = active(data_enable_fuota);
+        data.isFuotaPending = trueFalse(data_fuota_pending);
+        return data;
     }
 
-    /* FEEL : 11 bytes */
     function feelConfigurationDataOutput() {
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "reconfigurationSource": reconfigurationSource(bitsValue(16, 3)),
-            "reconfigurationStatus": reconfigurationState(bitsValue(19, 2)),
-            "periodMeasure": period(bitsValue(21, 5)),
-            "enableButtonPressNotification": active(bitsValue(26, 1)),
-            "protocolAndRegion": loraRegion(bitsValue(27, 4)),
-            "enablePeriodicData": active(bitsValue(31, 1)),
-            "periodPeriodicTransmission": period(bitsValue(32, 6)),
-            "deltaTemperature": deltaTemp(bitsValue(38, 7)),
-            "enableDatalogTemperature": active(bitsValue(45, 1)),
-            "datalogNewValues": counter(bitsValue(46, 6)),
-            "datalogRepeatValues": counter(bitsValue(52, 5)),
-            "periodDatalogTransmission": transmissionPeriodHistorical(bitsValue(57, 8)),
-            "pendingJoin": pendingJoin(bitsValue(65, 1)),
-            "enableNfcDiscover": nfcStatus(bitsValue(66, 2)),
-            "enableDatalogHumidity": active(bitsValue(68, 1)),
-            "downlinkFcnt": counter(bitsValue(69, 16))
-        };
+        var data_config_source = bitsValue(16, 3);
+        var data_config_status = bitsValue(19, 2);
+        var data_lora_region = bitsValue(22, 4);
+        var data_periodic_tx_on_off = bitsValue(26, 1);
+        var data_periodic_tx_period = bitsValue(27, 6);
+        var data_periodic_delta_temp = bitsValue(33, 7);
+        var data_datalog_temperature_on_off = bitsValue(40, 1);
+        var data_datalog_new_measure = bitsValue(41, 6);
+        var data_datalog_repetition = bitsValue(47, 5);
+        var data_datalog_tx_period = bitsValue(52, 8);
+        var data_pending_join = bitsValue(60, 1);
+        var data_nfc_status = bitsValue(61, 2);
+        var data_datalog_humidity_on_off = bitsValue(63, 1);
+        var data_downlink_fcnt = bitsValue(64, 16);
+        var data_enable_fuota = bitsValue(80, 1);
+        var data_fuota_pending = bitsValue(81, 1);
+
+        var data = headerOutput();
+        data.reconfigurationSource = reconfigurationSource(data_config_source);
+        data.reconfigurationStatus = reconfigurationState(data_config_status);
+        data.protocolAndRegion = protocolAndRegion(data_lora_region);
+        data.enablePeriodicData = active(data_periodic_tx_on_off);
+        data.periodPeriodicTransmission = period(data_periodic_tx_period);
+        data.deltaTemperature = deltaTemp(data_periodic_delta_temp);
+        data.enableDatalogTemperature = active(data_datalog_temperature_on_off);
+        data.enableDatalogHumidity = active(data_datalog_humidity_on_off);
+        data.datalogNewValues = data_datalog_new_measure;
+        data.datalogRepeatValues = data_datalog_repetition;
+        data.periodDatalogTransmission = transmissionPeriodHistorical(data_datalog_tx_period);
+        data.pendingJoin = pendingJoin(data_pending_join);
+        data.enableNfcDiscover = nfcStatus(data_nfc_status);
+        data.downlinkFcnt = data_downlink_fcnt;
+        data.enableFuota = active(data_enable_fuota);
+        data.isFuotaPending = trueFalse(data_fuota_pending);
+        return data;
     }
 
-    /* MOVE : 12 bytes */
     function moveConfigurationDataOutput() {
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "reconfigurationSource": reconfigurationSource(bitsValue(16, 3)),
-            "reconfigurationStatus": reconfigurationState(bitsValue(19, 2)),
-            "periodMeasure": period(bitsValue(21, 5)),
-            "enableMotion": active(bitsValue(26, 1)),
-            "enableButtonPressNotification": active(bitsValue(27, 1)),
-            "protocolAndRegion": loraRegion(bitsValue(28, 4)),
-            "enablePeriodicData": active(bitsValue(32, 1)),
-            "periodPeriodicTransmission": period(bitsValue(33, 6)),
-            "deltaTemperature": deltaTemp(bitsValue(39, 7)),
-            "enableDatalogTemperature": active(bitsValue(46, 1)),
-            "datalogNewValues": counter(bitsValue(47, 6)),
-            "datalogRepeatValues": counter(bitsValue(53, 5)),
-            "periodDatalogTransmission": transmissionPeriodHistorical(bitsValue(58, 8)),
-            "pendingJoin": pendingJoin(bitsValue(66, 1)),
-            "enableNfcDiscover": nfcStatus(bitsValue(67, 2)),
-            "enableDatalogHumidity": active(bitsValue(69, 1)),
-            "downlinkFcnt": counter(bitsValue(70, 16)),
-            "enableRoomPresence": active(bitsValue(86, 1)),
-            "periodWithoutMotion": period(bitsValue(87, 6))
-        };
+        var data_config_source = bitsValue(16, 3);
+        var data_config_status = bitsValue(19, 2);
+        var data_sensor_on_off_pir = bitsValue(21, 1);
+        var data_lora_region = bitsValue(23, 4);
+        var data_periodic_tx_on_off = bitsValue(27, 1);
+        var data_periodic_tx_period = bitsValue(28, 6);
+        var data_periodic_delta_temp = bitsValue(34, 7);
+        var data_datalog_temperature_on_off = bitsValue(41, 1);
+        var data_datalog_new_measure = bitsValue(42, 6);
+        var data_datalog_repetition = bitsValue(48, 5);
+        var data_datalog_tx_period = bitsValue(53, 8);
+        var data_pending_join = bitsValue(61, 1);
+        var data_nfc_status = bitsValue(62, 2);
+        var data_datalog_humidity_on_off = bitsValue(64, 1);
+        var data_downlink_fcnt = bitsValue(65, 16);
+        var data_presence_alerte_on_off = bitsValue(81, 1);
+        var data_period_without_presence_alerte = bitsValue(82, 6);
+        var data_enable_fuota = bitsValue(88, 1);
+        var data_fuota_pending = bitsValue(89, 1);
+
+        var data = headerOutput();
+        data.reconfigurationSource = reconfigurationSource(data_config_source);
+        data.reconfigurationStatus = reconfigurationState(data_config_status);
+        data.enableMotion = active(data_sensor_on_off_pir);
+        data.protocolAndRegion = protocolAndRegion(data_lora_region);
+        data.enablePeriodicData = active(data_periodic_tx_on_off);
+        data.periodPeriodicTransmission = period(data_periodic_tx_period);
+        data.deltaTemperature = deltaTemp(data_periodic_delta_temp);
+        data.enableDatalogTemperature = active(data_datalog_temperature_on_off);
+        data.enableDatalogHumidity = active(data_datalog_humidity_on_off);
+        data.datalogNewValues = data_datalog_new_measure;
+        data.datalogRepeatValues = data_datalog_repetition;
+        data.periodDatalogTransmission = transmissionPeriodHistorical(data_datalog_tx_period);
+        data.pendingJoin = pendingJoin(data_pending_join);
+        data.enableNfcDiscover = nfcStatus(data_nfc_status);
+        data.downlinkFcnt = data_downlink_fcnt;
+        data.enableRoomPresence = active(data_presence_alerte_on_off);
+        data.periodWithoutMotion = period(data_period_without_presence_alerte);
+        data.enableFuota = active(data_enable_fuota);
+        data.isFuotaPending = trueFalse(data_fuota_pending);
+        return data;
     }
 
-    /* WAVE : 16 bytes */
     function waveConfigurationDataOutput() {
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "reconfigurationSource": reconfigurationSource(bitsValue(16, 3)),
-            "reconfigurationStatus": reconfigurationState(bitsValue(19, 2)),
-            "periodMeasure": period(bitsValue(21, 5)),
-            "enableCo2": active(bitsValue(26, 1)),
-            "enableMotion": active(bitsValue(27, 1)),
-            "enableAutomaticCo2Calibration": active(bitsValue(28, 1)),
-            "thresholdCo2Medium": co2Threshold(bitsValue(29, 10)),
-            "thresholdCo2High": co2Threshold(bitsValue(39, 10)),
-            "enableLedCo2": active(bitsValue(49, 1)),
-            "enableLedMediumLevel": active(bitsValue(50, 1)),
-            "enableButtonPressNotification": active(bitsValue(51, 1)),
-            "protocolAndRegion": loraRegion(bitsValue(52, 4)),
-            "enablePeriodicData": active(bitsValue(56, 1)),
-            "periodPeriodicTransmission": period(bitsValue(57, 6)),
-            "deltaCo2": deltaCO2(bitsValue(63, 8)),
-            "deltaTemperature": deltaTemp(bitsValue(71, 7)),
-            "enableDatalogCo2": active(bitsValue(78, 1)),
-            "enableDatalogTemperature": active(bitsValue(79, 1)),
-            "datalogNewValues": counter(bitsValue(80, 6)),
-            "datalogRepeatValues": counter(bitsValue(86, 5)),
-            "periodDatalogTransmission": transmissionPeriodHistorical(bitsValue(91, 8)),
-            "pendingJoin": pendingJoin(bitsValue(99, 1)),
-            "enableNfcDiscover": nfcStatus(bitsValue(100, 2)),
-            "enableDatalogHumidity": active(bitsValue(102, 1)),
-            "downlinkFcnt": counter(bitsValue(103, 16)),
-            "enableRoomPresence": active(bitsValue(119, 1)),
-            "periodWithoutMotion": period(bitsValue(120, 6))
-        };
+        var data_config_source = bitsValue(16, 3);
+        var data_config_status = bitsValue(19, 2);
+        var data_sensor_on_off_co2 = bitsValue(21, 1);
+        var data_sensor_on_off_pir = bitsValue(22, 1);
+        var data_co2_auto_calibration = bitsValue(23, 1);
+        var data_co2_medium_level = bitsValue(24, 10);
+        var data_co2_high_level = bitsValue(34, 10);
+        var data_led_on_off = bitsValue(44, 1);
+        var data_led_orange_on_off = bitsValue(45, 1);
+        var data_lora_region = bitsValue(47, 4);
+        var data_periodic_tx_on_off = bitsValue(51, 1);
+        var data_periodic_tx_period = bitsValue(52, 6);
+        var data_periodic_delta_co2 = bitsValue(58, 8);
+        var data_periodic_delta_temp = bitsValue(66, 7);
+        var data_datalog_co2_on_off = bitsValue(73, 1);
+        var data_datalog_temperature_on_off = bitsValue(74, 1);
+        var data_datalog_new_measure = bitsValue(75, 6);
+        var data_datalog_repetition = bitsValue(81, 5);
+        var data_datalog_tx_period = bitsValue(86, 8);
+        var data_pending_join = bitsValue(94, 1);
+        var data_nfc_status = bitsValue(95, 2);
+        var data_datalog_humidity_on_off = bitsValue(97, 1);
+        var data_downlink_fcnt = bitsValue(98, 16);
+        var data_presence_alerte_on_off = bitsValue(114, 1);
+        var data_period_without_presence_alerte = bitsValue(115, 6);
+        var data_enable_fuota = bitsValue(121, 1);
+        var data_fuota_pending = bitsValue(122, 1);
+
+        var data = headerOutput();
+        data.reconfigurationSource = reconfigurationSource(data_config_source);
+        data.reconfigurationStatus = reconfigurationState(data_config_status);
+        data.enableCo2 = active(data_sensor_on_off_co2);
+        data.enableMotion = active(data_sensor_on_off_pir);
+        data.enableAutomaticCo2Calibration = active(data_co2_auto_calibration);
+        data.thresholdCo2Medium = co2Threshold(data_co2_medium_level);
+        data.thresholdCo2High = co2Threshold(data_co2_high_level);
+        data.enableLedCo2 = active(data_led_on_off);
+        data.enableLedMediumLevel = active(data_led_orange_on_off);
+        data.protocolAndRegion = protocolAndRegion(data_lora_region);
+        data.enablePeriodicData = active(data_periodic_tx_on_off);
+        data.periodPeriodicTransmission = period(data_periodic_tx_period);
+        data.deltaCo2 = deltaCO2(data_periodic_delta_co2);
+        data.deltaTemperature = deltaTemp(data_periodic_delta_temp);
+        data.enableDatalogCo2 = active(data_datalog_co2_on_off);
+        data.enableDatalogTemperature = active(data_datalog_temperature_on_off);
+        data.enableDatalogHumidity = active(data_datalog_humidity_on_off);
+        data.datalogNewValues = data_datalog_new_measure;
+        data.datalogRepeatValues = data_datalog_repetition;
+        data.periodDatalogTransmission = transmissionPeriodHistorical(data_datalog_tx_period);
+        data.pendingJoin = pendingJoin(data_pending_join);
+        data.enableNfcDiscover = nfcStatus(data_nfc_status);
+        data.downlinkFcnt = data_downlink_fcnt;
+        data.enableRoomPresence = active(data_presence_alerte_on_off);
+        data.periodWithoutMotion = period(data_period_without_presence_alerte);
+        data.enableFuota = active(data_enable_fuota);
+        data.isFuotaPending = trueFalse(data_fuota_pending);
+        return data;
+    }
+
+    function riseConfigurationDataOutput() {
+        var data_config_source = bitsValue(16, 3);
+        var data_config_status = bitsValue(19, 2);
+        var data_sensor_on_off_co2 = bitsValue(21, 1);
+        var data_co2_auto_calibration = bitsValue(22, 1);
+        var data_co2_medium_level = bitsValue(23, 10);
+        var data_co2_high_level = bitsValue(33, 10);
+        var data_led_on_off = bitsValue(43, 1);
+        var data_led_orange_on_off = bitsValue(44, 1);
+        var data_lora_region = bitsValue(46, 4);
+        var data_periodic_tx_on_off = bitsValue(50, 1);
+        var data_periodic_tx_period = bitsValue(51, 6);
+        var data_periodic_delta_co2 = bitsValue(57, 8);
+        var data_periodic_delta_temp = bitsValue(65, 7);
+        var data_datalog_co2_on_off = bitsValue(72, 1);
+        var data_datalog_temperature_on_off = bitsValue(73, 1);
+        var data_datalog_new_measure = bitsValue(74, 6);
+        var data_datalog_repetition = bitsValue(80, 5);
+        var data_datalog_tx_period = bitsValue(85, 8);
+        var data_pending_join = bitsValue(93, 1);
+        var data_nfc_status = bitsValue(94, 2);
+        var data_datalog_humidity_on_off = bitsValue(96, 1);
+        var data_downlink_fcnt = bitsValue(97, 16);
+        var data_enable_fuota = bitsValue(113, 1);
+        var data_fuota_pending = bitsValue(114, 1);
+
+        var data = headerOutput();
+        data.reconfigurationSource = reconfigurationSource(data_config_source);
+        data.reconfigurationStatus = reconfigurationState(data_config_status);
+        data.enableCo2 = active(data_sensor_on_off_co2);
+        data.enableAutomaticCo2Calibration = active(data_co2_auto_calibration);
+        data.thresholdCo2Medium = co2Threshold(data_co2_medium_level);
+        data.thresholdCo2High = co2Threshold(data_co2_high_level);
+        data.enableLedCo2 = active(data_led_on_off);
+        data.enableLedMediumLevel = active(data_led_orange_on_off);
+        data.protocolAndRegion = protocolAndRegion(data_lora_region);
+        data.enablePeriodicData = active(data_periodic_tx_on_off);
+        data.periodPeriodicTransmission = period(data_periodic_tx_period);
+        data.deltaCo2 = deltaCO2(data_periodic_delta_co2);
+        data.deltaTemperature = deltaTemp(data_periodic_delta_temp);
+        data.enableDatalogCo2 = active(data_datalog_co2_on_off);
+        data.enableDatalogTemperature = active(data_datalog_temperature_on_off);
+        data.enableDatalogHumidity = active(data_datalog_humidity_on_off);
+        data.datalogNewValues = data_datalog_new_measure;
+        data.datalogRepeatValues = data_datalog_repetition;
+        data.periodDatalogTransmission = transmissionPeriodHistorical(data_datalog_tx_period);
+        data.pendingJoin = pendingJoin(data_pending_join);
+        data.enableNfcDiscover = nfcStatus(data_nfc_status);
+        data.downlinkFcnt = data_downlink_fcnt;
+        data.enableFuota = active(data_enable_fuota);
+        data.isFuotaPending = trueFalse(data_fuota_pending);
+        return data;
     }
 
     /* ------------------------------------------------------------------ */
-    /* 0x07 - Presence / absence alert (SPACE, MOVE, WAVE)                 */
+    /* 0x7 - Presence / absence alert (SPACE, MOVE, WAVE)                  */
     /* ------------------------------------------------------------------ */
 
     function presenceAlertDataOutput() {
-        return {
-            "typeOfProduct": typeOfProduct(octetTypeProduit),
-            "typeOfMessage": typeOfMessage(octetTypeMessage),
-            "versionOfMessage": octetVersionMessage,
-            "roomStatus": roomStatus(bitsValue(16, 1))
-        };
+        var data_presence = bitsValue(16, 1);
+
+        var data = headerOutput();
+        data.presence = presenceAlert(data_presence);
+        return data;
     }
 
 } // end of decoder
