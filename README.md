@@ -41,6 +41,11 @@ Decoders/
 │   │   └── decoderX2.js
 │   └── X290 - MOVE+/
 │       └── decoderX2.js
+├── X4 - VISTA/
+│   ├── decoderVista.js
+│   ├── LICENSE
+│   ├── README-General_VISTA.md
+│   └── README-Frames_VISTA.md
 ├── X5 - SIGN WAVE MOVE RISE FEEL ECHO VIEW/
 │   ├── README-General_X5.md
 │   ├── README-Frames_X5.md
@@ -88,6 +93,7 @@ Within the X2 and X5 families the per-reference decoder files are identical copi
 | **A100LS_C** | RELAY | `decoderA100.js` | [General](A100LS_C%20-%20RELAY/README-General_RELAY.md) · [Frames](A100LS_C%20-%20RELAY/README-Frames_RELAY.md) |
 | **A3** | FLOW CORE, FLOW PRO | `decoderFlow.js`<br>`encoderFlow.js` (downlink encoder) | [General](A3%20-%20FLOW%20CORE%20FLOW%20PRO/README-General_FLOW.md) · [Frames](A3%20-%20FLOW%20CORE%20FLOW%20PRO/README-Frames_FLOW.md) · [Examples](A3%20-%20FLOW%20CORE%20FLOW%20PRO/README-Examples_FLOW.md) |
 | **X2** | FEEL+, RISE+, WAVE+, MOVE+, SIGN+, SENSE+, ATMO+ | `decoderX2.js` (per reference)<br>`decoderX2Milesight.js` (Milesight-compatible output) | [General](X2%20-%20FEEL+%20RISE+%20WAVE+%20MOVE+%20SIGN+%20SENSE+%20ATMO+/README_X2_General.md) · [Frames](X2%20-%20FEEL+%20RISE+%20WAVE+%20MOVE+%20SIGN+%20SENSE+%20ATMO+/README_X2_Frames.md) |
+| **X4** | VISTA SPACE, VISTA FEEL, VISTA MOVE, VISTA WAVE, VISTA RISE | `decoderVista.js` | [General](X4%20-%20VISTA/README-General_VISTA.md) · [Frames](X4%20-%20VISTA/README-Frames_VISTA.md) |
 | **X5** | SIGN, WAVE, MOVE, RISE, FEEL, ECHO, VIEW | `decoderLoRaSigfoxX5.js` (per reference) | [General](X5%20-%20SIGN%20WAVE%20MOVE%20RISE%20FEEL%20ECHO%20VIEW/README-General_X5.md) · [Frames](X5%20-%20SIGN%20WAVE%20MOVE%20RISE%20FEEL%20ECHO%20VIEW/README-Frames_X5.md) |
 | **X8** | AIR+, AIR | `decoderAir+.js`<br>`BMS/decoderAir+_BMS.js` (one numeric type per field, for BMS integration) | [General](X8%20-%20AIR+%20AIR/README-General_AIR.md) · [Frames](X8%20-%20AIR+%20AIR/README-Frames_AIR.md) · [BMS](X8%20-%20AIR+%20AIR/BMS/README-BMS_AIR.md) |
 | **X8** | ORIGIN+, ORIGIN, GUARD+, GUARD | `decoderOrigin+.js` | [General](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-General_ORIGIN-GUARD.md) · [Frames](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-Frames_ORIGIN-GUARD.md) |
@@ -125,6 +131,11 @@ Byte 0 of every uplink identifies the product:
 | **X2** | SIGN+ | 0xC7 |
 | **X2** | SENSE+ | 0xC8 |
 | **X2** | ATMO+ | 0xCD |
+| **X4** | VISTA FEEL | 0xD7 |
+| **X4** | VISTA MOVE | 0xD8 |
+| **X4** | VISTA WAVE | 0xD9 |
+| **X4** | VISTA SPACE | 0xDA |
+| **X4** | VISTA RISE | 0xDB |
 | **X5** | FEEL | 0xA9 |
 | **X5** | RISE | 0xAA |
 | **X5** | MOVE | 0xAB |
