@@ -100,6 +100,48 @@ Changes that alter the output of a decoder are marked **⚠ Output change** belo
 
 ---
 
+## X8 — ORIGIN+ / ORIGIN / GUARD+ / GUARD
+
+### `decoderOrigin+.js` 2.0.0 — 2026-11-10
+Decoder rewritten on the model of the FLOW and VISTA decoders, technical guide D1035C (05/12/2023). Every field keeps its bit position (checked against 1.0.1 on random frames); only the output format changes.
+
+- ⚠ **Output change:** output fields renamed after the FLOW and VISTA decoders:
+
+  | Frame | 1.0.1 | 2.0.0 |
+  |---|---|---|
+  | 0x00 | `hwVersion` | `hardwareVersion` |
+  | 0x00 | `swVersion` (code × 0.1, e.g. `1.2000000000000002`) | `softwareVersion` (raw code, 12 = V01.2) |
+  | 0x00 | `rmgLifetime` | `remainingProductLifetime` |
+  | 0x00 | `smokeSensorStatus` | `statusSmokeSensor` |
+  | 0x00 | `tempHumSensorStatus` | `statusTemperatureHumiditySensor` |
+  | 0x00 | `antiTearDetectionStatus` | `statusAntiTear` |
+  | 0x01 | `datalogEnable` | `enableDatalogTemperature` |
+  | 0x01 | `dailyAirEnable` | `enableDailyAirQuality` |
+  | 0x01 | `nfcStatus` | `enableNfcDiscover` |
+  | 0x01 | `datalogMeasure` | `datalogNewValues` |
+  | 0x01 | `datalogMeasureRepetition` | `datalogRepeatValues` |
+  | 0x01 | `transmissionIntervalDatalog` | `periodDatalogTransmission` |
+  | 0x01 | `d2dNetworkID` | `d2dNetworkId` |
+  | 0x02 | `smokeLocalProductTest` | `productTest` |
+  | 0x02 | `digitalMaintenanceCertificate` | `isMaintenanceDone` (`"false"` / `"true"`) |
+  | 0x05 | `datalogNewMeasure` | `newMeasure` |
+  | 0x05 | `transmissionIntervalDatalog` (number) | `periodBetweenMeasure` (`{"value", "unit": "minutes"}`) |
+  | 0x05 | `datalogMeasureRepetition` | `redundancy` |
+  | 0x05 | `temperature` (array) | `temperature` (`{"value": [...], "unit": "°C"}`) |
+
+- ⚠ **Output change:** labels in lower case as in the FLOW and VISTA decoders, typos fixed (e.g. `"Smoke sensor ok"` → `"ok"`, `"Magnetic base detected"` → `"detected"`, `"Partial Succes"` → `"partial success"`, `" No Discoverable"` → `"no discoverable"`, `"Smoke Alarm non-activated"` → `"no smoke detected"`). The full list of values is in `README-Frames_ORIGIN-GUARD.md`.
+- ⚠ **Output change:** `typeOfProduct` returns the names of the technical guide: `"ORIGIN+"` (0xBD and 0xB1), `"ORIGIN"`, `"GUARD+"`, `"GUARD"` (was `"Origin+ LoRa/Sigfox"`, `"Origin+ LoRa"`, `"Origin LoRa"`…); an unknown code returns `"Reserved"`. Message type 0x02 is `"Alarm Status"` (was `"Smoke Alarm"`), 0x03 `"Daily Air Quality"` (was `"Air Quality"`).
+- ⚠ **Output change:** `batteryVoltage` and `timeSince…` use `"unit"` instead of `"units"`; temperatures are rounded to 0.1 °C (e.g. `21.3` instead of `21.300000000000004`).
+- ⚠ **Output change:** temperature 1022 returns `"Sensor not present"`, as in the guide (was `"Deconnected Sensor"`). In historical data, a measure at 1023 returns `"Error"` (was `0`).
+- ⚠ **Output change:** `loraRegion` removed from the product configuration: bits 27–30 are reserved in the guide.
+- New field `downlinkFcnt` in the product configuration (bits 72–87), output when the frame is 11 bytes long.
+- A payload shorter than 2 bytes, an unknown message type or a truncated frame returns `errors` (LoRa Alliance TS013) instead of a partial or `undefined` result; a truncated historical frame returns the measures present and a `warning`.
+- Fix: the decoder failed in strict mode (implicit globals `outputTypeMessage` and `offset_binaire`), so it did not load on ChirpStack v4. Only the frame matching the message type is decoded.
+- New legacy entry points `Decode(fPort, bytes, variables)` (ChirpStack v3) and `Decoder(bytes, port)` (TTN v2).
+- New `examples.json` (LoRa Alliance TS013 format) and `README-Examples_ORIGIN-GUARD.md`: 19 examples covering every frame and the error cases. `README-Frames_ORIGIN-GUARD.md` aligned on the guide (reserved bits, error codes, Downlink FCnt) with the decoder field of each value.
+
+---
+
 ## All families
 
 ### 2026-09-28

@@ -73,8 +73,10 @@ Decoders/
 │       └── README-BMS_AIR.md
 ├── X8 - ORIGIN+ ORIGIN GUARD+ GUARD/
 │   ├── decoderOrigin+.js
+│   ├── examples.json
 │   ├── README-General_ORIGIN-GUARD.md
-│   └── README-Frames_ORIGIN-GUARD.md
+│   ├── README-Frames_ORIGIN-GUARD.md
+│   └── README-Examples_ORIGIN-GUARD.md
 └── X9 - TRACK+/
     ├── decoderTrack+.js
     ├── README-General_TRACK+.md
@@ -96,7 +98,7 @@ Within the X2 and X5 families the per-reference decoder files are identical copi
 | **X4** | VISTA SPACE, VISTA FEEL, VISTA MOVE, VISTA WAVE, VISTA RISE | `decoderVista.js` | [General](X4%20-%20VISTA/README-General_VISTA.md) · [Frames](X4%20-%20VISTA/README-Frames_VISTA.md) |
 | **X5** | SIGN, WAVE, MOVE, RISE, FEEL, ECHO, VIEW | `decoderLoRaSigfoxX5.js` (per reference) | [General](X5%20-%20SIGN%20WAVE%20MOVE%20RISE%20FEEL%20ECHO%20VIEW/README-General_X5.md) · [Frames](X5%20-%20SIGN%20WAVE%20MOVE%20RISE%20FEEL%20ECHO%20VIEW/README-Frames_X5.md) |
 | **X8** | AIR+, AIR | `decoderAir+.js`<br>`BMS/decoderAir+_BMS.js` (one numeric type per field, for BMS integration) | [General](X8%20-%20AIR+%20AIR/README-General_AIR.md) · [Frames](X8%20-%20AIR+%20AIR/README-Frames_AIR.md) · [BMS](X8%20-%20AIR+%20AIR/BMS/README-BMS_AIR.md) |
-| **X8** | ORIGIN+, ORIGIN, GUARD+, GUARD | `decoderOrigin+.js` | [General](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-General_ORIGIN-GUARD.md) · [Frames](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-Frames_ORIGIN-GUARD.md) |
+| **X8** | ORIGIN+, ORIGIN, GUARD+, GUARD | `decoderOrigin+.js` | [General](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-General_ORIGIN-GUARD.md) · [Frames](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-Frames_ORIGIN-GUARD.md) · [Examples](X8%20-%20ORIGIN+%20ORIGIN%20GUARD+%20GUARD/README-Examples_ORIGIN-GUARD.md) |
 | **X9** | TRACK+ | `decoderTrack+.js` | [General](X9%20-%20TRACK+/README-General_TRACK+.md) · [Frames](X9%20-%20TRACK+/README-Frames_TRACK+.md) |
 
 ---

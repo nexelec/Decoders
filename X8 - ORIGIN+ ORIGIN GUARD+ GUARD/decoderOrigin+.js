@@ -1,385 +1,389 @@
-/* 
- * Payload Decoder LoRa Alliance for ORIGIN+ (X870), ORIGIN (X865), GUARD+ (X860), GUARD (X855)
- * Copyright 2025 Nexelec
- * Version : 1.0.1
- */
+/*
+* Payload Decoder LoRa Alliance for ORIGIN+ (X870), ORIGIN (X865), GUARD+ (X860), GUARD (X855)
+* Copyright 2026 Nexelec
+* Version : 2.0.0
+*
+* Reference : D1035C - ORIGIN+ / ORIGIN / GUARD+ / GUARD LoRa Sigfox Technical Guide (05/12/2023)
+* Uplink port : 56 (LoRaWAN). Frames 0x00 to 0x03 are also sent over Sigfox, with the same layout.
+*
+* Frame layout reminder :
+*   byte 0    : product type (0xBD ORIGIN+, 0xB2 ORIGIN, 0xB3 GUARD+, 0xB4 GUARD)
+*   byte 1    : message type (0x00 to 0x05)
+*   next bits : payload, MSB first, fields are NOT byte aligned
+*/
 
-function decodeUplink(input) 
-{
-    var stringHex = bytesString(input.bytes)
-    
-    var octetTypeProduit = parseInt(stringHex.substring(0,2),16);
-    var octetTypeMessage = parseInt(stringHex.substring(2,4),16);
-    
-    var data=dataOutput(octetTypeMessage);
-    return {data}
+function decodeUplink(input) {
 
-    function bytesString(input)
-    {
-        var bufferString='';
-        var decToString='';
+    var stringHex = bytesString(input.bytes);
 
-        for(var i=0; i<input.length;i++)
-        {
-            decToString = input[i].toString(16).padStart(2,'0')
-                    
-            bufferString=bufferString.concat(decToString)
-                    
-        }       
+    var octetTypeProduit = parseInt(stringHex.substring(0, 2), 16);
+    var octetTypeMessage = parseInt(stringHex.substring(2, 4), 16);
+
+    // Minimum payload length in bytes for each message type
+    var frameLength = [7, 9, 7, 9, 5, 5];
+
+    if (input.bytes.length < 2) {
+        return { "errors": ["Payload too short: " + input.bytes.length + " bytes, at least 2 expected"] };
+    }
+    if (octetTypeMessage >= frameLength.length) {
+        return { "errors": ["Unknown message type: " + octetTypeMessage] };
+    }
+    if (input.bytes.length < frameLength[octetTypeMessage]) {
+        return {
+            "errors": ["Payload too short for message type " + octetTypeMessage + ": " +
+                input.bytes.length + " bytes, " + frameLength[octetTypeMessage] + " expected"]
+        };
+    }
+
+    var warnings = [];
+    var data = dataOutput(octetTypeMessage);
+
+    if (warnings.length > 0) { return { "data": data, "warnings": warnings } }
+    return { "data": data };
+
+    function bytesString(input) {
+        var bufferString = '';
+        var decToString = '';
+
+        for (var i = 0; i < input.length; i++) {
+            decToString = ('0' + (input[i] & 0xFF).toString(16)).slice(-2);
+            bufferString = bufferString.concat(decToString);
+        }
         return bufferString;
     }
-    
-    function dataOutput(octetTypeMessage)
-    {
-        outputTypeMessage=[productStatusDataOutput(stringHex),productConfigurationDataOutput(stringHex),smokeAlarmDataOutput(stringHex),dailyAirDataOutput(stringHex),periodicDataOutput(stringHex),temperatureHistoricalDataOutput(stringHex)]
-        return outputTypeMessage[octetTypeMessage]
+
+    /*
+    * Reads a bit field.
+    * offset : position of the first bit of the field in the frame (bit 0 = MSB of byte 0),
+    *          as given in the "Offset" column of the technical guide
+    * size   : field length in bits (1 to 24)
+    */
+    function bitsValue(offset, size) {
+        var firstNibble = Math.floor(offset / 4);
+        var lastNibble = Math.floor((offset + size - 1) / 4);
+        var shift = ((lastNibble + 1) * 4) - (offset + size);
+
+        return (parseInt(stringHex.substring(firstNibble, lastNibble + 1), 16) >>> shift) & ((1 << size) - 1);
     }
 
-    function typeOfProduct(octetTypeProduit)
-    {
-        if(octetTypeProduit==0xB1){return "Origin+ LoRa"}
-        if(octetTypeProduit==0xB2){return "Origin LoRa"}
-        if(octetTypeProduit==0xB3){return "Guard+ LoRa"}
-        if(octetTypeProduit==0xB4){return "Guard LoRa"}
-		if(octetTypeProduit==0xBD){return "Origin+ LoRa/Sigfox"}
-    }    
-    
-    function typeOfMessage(octetTypeMessage)
-    {
-        var message_name =["Product Status","Product Configuration","Smoke Alarm","Air Quality","Periodic Data","Historical Data"]
-        return message_name[octetTypeMessage]
+    function dataOutput(octetTypeMessage) {
+        if (octetTypeMessage == 0x00) { return productStatusDataOutput() }
+        if (octetTypeMessage == 0x01) { return productConfigurationDataOutput() }
+        if (octetTypeMessage == 0x02) { return alarmStatusDataOutput() }
+        if (octetTypeMessage == 0x03) { return dailyAirQualityDataOutput() }
+        if (octetTypeMessage == 0x04) { return periodicDataOutput() }
+        if (octetTypeMessage == 0x05) { return historicalTemperatureDataOutput() }
     }
 
-    ///////////////////////////////////////////////
-    // Product Status Data Message Function
-    ///////////////////////////////////////////////
-
-
-    function smokeStatus(octetSmokeStatus)
-    {
-        if(octetSmokeStatus===0){return "Smoke sensor ok"};
-        if(octetSmokeStatus===1){return "Smoke sensor fault"};
+    function typeOfProduct(octetTypeProduit) {
+        if (octetTypeProduit == 0xBD) { return "ORIGIN+" }
+        if (octetTypeProduit == 0xB2) { return "ORIGIN" }
+        if (octetTypeProduit == 0xB3) { return "GUARD+" }
+        if (octetTypeProduit == 0xB4) { return "GUARD" }
+        // 0xB1: code sent by the first ORIGIN+ LoRa firmware, not listed in D1035C
+        if (octetTypeProduit == 0xB1) { return "ORIGIN+" }
+        return "Reserved";
     }
 
-    function temperatureStatus(octetTemperatureStatus)
-    {
-        if(octetTemperatureStatus===0){return "T°/humidity sensor ok"};
-        if(octetTemperatureStatus===1){return "T°/humidity sensor fault"};
+    function typeOfMessage(octetTypeMessage) {
+        var message_name = ["Product Status", "Product Configuration", "Alarm Status", "Daily Air Quality",
+            "Periodic Data", "Historical Data"]
+        return message_name[octetTypeMessage];
     }
 
-
-    function magnetBaseDetection(octetMagnetBaseDetection)
-    {
-        if(octetMagnetBaseDetection===0){return "Magnetic base not detected"};
-        if(octetMagnetBaseDetection===1){return "Magnetic base detected"};
-        if(octetMagnetBaseDetection===2){return "Product removed from its based just now"};
-        if(octetMagnetBaseDetection===3){return "Product installed on its base just now"};
-        if(octetMagnetBaseDetection===4){return "Magnetic base never detected"};
-    }
-
-    function batteryLevel(octetBatteryLevel)
-    {
-        if(octetBatteryLevel===0){return "High"};
-        if(octetBatteryLevel===1){return "Medium"};
-        if(octetBatteryLevel===2){return "Low"};
-        if(octetBatteryLevel===3){return "Critical"};
-    }
-    
-    function batteryVoltage(octetBatteryVoltage)
-    {
-        return {"value":((octetBatteryVoltage*5)+2000),"units":"mV"}
-    }
-
-    function productLifetime(octetProductLifetime)
-    {
-      {return {"value":octetProductLifetime, "unit":"month"}};
-    }
-
-    /////////////////////////////////////////////////////
-    //Product Configuration Message Function
-    ////////////////////////////////////////////////////
-
-    function period(octetPeriod)
-    {
-        return {"value":octetPeriod*10, "unit":"minutes"};
-    }
-
-    function loraRegion(octetLoRaRegion)
-    {
-        var message_name =["EU868","Reserved","Reserved","Reserved","Reserved","Reserved","Reserved"]
-        return message_name[octetLoRaRegion]
-    }
-
-    function pendingJoin(octetPending)
-    {
-        if(octetPending===0){return "No join request"}
-        else if(octetPending===1){return "Programmed join request"};
-    }
-
-    function nfcStatus(octetNfcStatus)
-    {
-        if(octetNfcStatus===0){return "Discoverable"}
-        else if(octetNfcStatus===1){return " No Discoverable"};
-    }
-
-    function Active(octetActive)
-    {
-        if(octetActive===1){return "Active"}
-        else if(octetActive===0){return "Deactivate"};
-    }
-
-    function reconfigurationSource(octetReconfigurationSource)
-    {
-        var message_name =["NFC","Downlink","Product Start up","Reserved","Reserved","Local"]
-        return message_name[octetReconfigurationSource]
-    }
-
-    function reconfigurationState(octetReconfigurationState)
-    {
-        var message_name =["Total Success","Partial Succes","Total fail","Reserved"]
-        return message_name[octetReconfigurationState]
-    }
-
-    function pendingJoin(octetPending)
-    {
-        if(octetPending===0){return "No join request scheduled"};
-        if(octetPending===1){return "Join request scheduled"};
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    ////// Smoke Alarm Message Function
-    /////////////////////////////////////////////////////////////////////
-
-    function alarmStatus(octetAlarmStatus)
-    {
-        if(octetAlarmStatus===0){return "Smoke Alarm non-activated"};
-        if(octetAlarmStatus===1){return "Local smoke Alarm activated"};
-        if(octetAlarmStatus===2){return "Remote smoke Alarm activated"};
-    }
-
-    function alarmHush(octetAlarmHush)
-    {
-        if(octetAlarmHush===0){return "Smoke alarm stopped because no smoke anymore"};
-        if(octetAlarmHush===1){return "Smoke alarm stopped following central button press"};
-        if(octetAlarmHush===2){return ": Smoke alarm stopped following a remote silence"};
-    }
-
-    function smokeTest(octetSmokeTest)
-    {
-        if(octetSmokeTest===0){return "Smoke test off"};
-        if(octetSmokeTest===1){return "Local smoke test was done"};
-        if(octetSmokeTest===2){return "Remote smoke test was done"};
-    }
-
-    function maintenance(octetMaintenance)
-    {
-        if(octetMaintenance===0){return "Maintenance not done"};
-        if(octetMaintenance===1){return "Maintenance has been done"};
-    }
-
-    function periodWeek(octetWeek)
-    {
-        return{"value":octetWeek,"units":"week"}
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    /////// Periodic Message Function
-    ///////////////////////////////////////////////////////////////////////
-    
-    function temperature(octetTemperature)
-    {
-        if(octetTemperature == 1023){return "Error"}
-        if(octetTemperature == 1022){return "Deconnected Sensor"}
-        else{ return{"value":((octetTemperature*0.1)-30),"unit":"°C"}}
-    }
-
-    function humidity(octetHumidity)
-    {
-        if(octetHumidity == 255){return "Error"}
-        else{ return{"value":(octetHumidity*0.5),"unit":"%RH"}}
-    }
-
-
-    ////////////////////////////////////////////////////////////////////
-    /////// HexToBinary
-    ///////////////////////////////////////////////////////////////////
-    function hexToBinary(encoded) {
-        var string_bin = "";
-        var string_bin_elements = "";
-        var i;
-        var j;
-
-        for (i = 0; i < encoded.length; i++) {
-            string_bin_elements = encoded.charAt(i);
-            string_bin_elements = parseInt(string_bin_elements, 16).toString(2);
-            if (string_bin_elements.length < 4) {
-                var nb_zeros = 4 - string_bin_elements.length;
-                for (j = 0; j < nb_zeros; j++) {
-                    string_bin_elements = "0" + string_bin_elements;
-                }
-            }
-            string_bin = string_bin + string_bin_elements;
-        }
-        return string_bin;
-    }
-    
-    //////////////////////////////////////////////////////////////////////
-    ////// Product message decoding
-    ////////////////////////////////////////////////////////////////////
-
-    function productStatusDataOutput(stringHex)
-    {
-        var data_hw_version = (parseInt(stringHex.substring(4,6),16)) & 0xFF;
-        var data_sw_version = (parseInt(stringHex.substring(6,8),16)) & 0xFF;
-        var data_product_lifetime = (parseInt(stringHex.substring(8,10),16)) & 0xFF;
-        var data_smoke_sensor= (parseInt(stringHex.substring(10,11),16)>>3) & 0x01;
-        var data_temp_hum_sensor= (parseInt(stringHex.substring(10,11),16)>>2) & 0x01;
-        var data_magnetic_base_detection = (parseInt(stringHex.substring(10,12),16)>>2) & 0x07;
-        var data_energy_status= (parseInt(stringHex.substring(11,12),16)) & 0x03;
-        var data_battery_voltage =(parseInt(stringHex.substring(12,14),16)) & 0xFF;
-
-        data = {"typeOfProduct": typeOfProduct(octetTypeProduit),
-        "typeOfMessage": typeOfMessage(octetTypeMessage),
-        "hwVersion":data_hw_version,
-        "swVersion":data_sw_version*0.1,
-        "rmgLifetime":productLifetime(data_product_lifetime),
-        "smokeSensorStatus": smokeStatus(data_smoke_sensor),
-        "tempHumSensorStatus": temperatureStatus(data_temp_hum_sensor),
-        "antiTearDetectionStatus": magnetBaseDetection(data_magnetic_base_detection),
-        "batteryLevel":batteryLevel(data_energy_status),
-        "batteryVoltage": batteryVoltage(data_battery_voltage)
-        }
-
-        return data;
-    }
-
-    function productConfigurationDataOutput(stringHex)
-    {
-        var data_reconfiguration_source = (parseInt(stringHex.substring(4,5),16)>>1)&0x07;
-        var data_reconfiguration_status = (parseInt(stringHex.substring(4,6),16)>>3)&0x03;
-        var data_datalog_enable= (parseInt(stringHex.substring(5,6),16)>>2)&0x01;
-        var data_daily_air_enable= (parseInt(stringHex.substring(5,6),16)>>1)&0x01;
-        var data_pending_join = (parseInt(stringHex.substring(6,7),16)>>3)&0x01;
-        var data_nfc_status = (parseInt(stringHex.substring(6,7),16)>>1)&0x03;
-        var data_lora_region = (parseInt(stringHex.substring(6,8),16)>>1)&0x0F;
-        var data_nb_data = (parseInt(stringHex.substring(7,10),16)>>3)&0x3F; 
-        var data_nb_of_redudancy =(parseInt(stringHex.substring(9,11),16)>>2)&0x1F;
-        var data_transmission_period = (parseInt(stringHex.substring(10,13),16)>>2)&0xFF;
-        var data_interconnection_id = (parseInt(stringHex.substring(12,17),16)>>1)&0x1FFFF;
-
-        data = {"typeOfProduct": typeOfProduct(octetTypeProduit),
-        "typeOfMessage": typeOfMessage(octetTypeMessage),
-        "reconfigurationSource":reconfigurationSource(data_reconfiguration_source),
-        "reconfigurationStatus":reconfigurationState(data_reconfiguration_status),
-        "datalogEnable":Active(data_datalog_enable),
-        "dailyAirEnable":Active(data_daily_air_enable),
-        "pendingJoin":pendingJoin(data_pending_join),
-        "nfcStatus":nfcStatus(data_nfc_status),
-        "loraRegion":loraRegion(data_lora_region),
-        "datalogMeasure":data_nb_data,
-        "datalogMeasureRepetition":data_nb_of_redudancy,
-        "transmissionIntervalDatalog":period(data_transmission_period),
-        "d2dNetworkID":data_interconnection_id,
-        }
-        return data;
-    }
-
-    function smokeAlarmDataOutput(stringHex)
-    {
-        var data_smoke_alarm = (parseInt(stringHex.substring(4,5),16) >> 2)&0x03;
-        var data_smoke_hush = (parseInt(stringHex.substring(4,5),16))&0x03;
-        var data_smoke_test = (parseInt(stringHex.substring(5,6),16)>>2)&0x03;
-        var data_time_since_last_smoke_test = (parseInt(stringHex.substring(5,8),16)>>2)&0xFF;
-        var data_maintenance = (parseInt(stringHex.substring(7,8),16)>>1)&0x01;
-        var data_time_since_last_maintenance = (parseInt(stringHex.substring(7,10),16)>>1)&0xFF;
-        var data_temperature = (parseInt(stringHex.substring(9,13),16)>>3)&0x3FF;
-        
-        data = { "typeOfProduct": typeOfProduct(octetTypeProduit),
-        "typeOfMessage": typeOfMessage(octetTypeMessage),
-        "smokeAlarm": alarmStatus(data_smoke_alarm),
-        "smokeAlarmHush": alarmHush(data_smoke_hush),
-        "smokeLocalProductTest": smokeTest(data_smoke_test),
-        "timeSinceLastTest":periodWeek(data_time_since_last_smoke_test),
-        "digitalMaintenanceCertificate":maintenance(data_maintenance),
-        "timeSinceLastMaintenance":periodWeek(data_time_since_last_maintenance),
-        "temperature":temperature(data_temperature)
+    function headerOutput() {
+        return {
+            "typeOfProduct": typeOfProduct(octetTypeProduit),
+            "typeOfMessage": typeOfMessage(octetTypeMessage)
         };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Measurements                                                        */
+    /* ------------------------------------------------------------------ */
+
+    /* 10 bits, 0.1 °C step, 30 °C offset (0 = -30 °C, 300 = 0 °C, 1000 = 70 °C) */
+    function temperature(octetTemperatureValue) {
+        if (octetTemperatureValue >= 1023) { return "Error" }
+        if (octetTemperatureValue >= 1022) { return "Sensor not present" }
+        else { return { "value": Math.round(((octetTemperatureValue / 10) - 30) * 10) / 10, "unit": "°C" } }
+    }
+
+    /* Historical data: value without unit (the unit is given once for the array) */
+    function historicalTemperature(octetTemperatureValue) {
+        if (octetTemperatureValue >= 1023) { return "Error" }
+        if (octetTemperatureValue >= 1022) { return "Sensor not present" }
+        else { return Math.round(((octetTemperatureValue / 10) - 30) * 10) / 10 }
+    }
+
+    /* 8 bits, 0.5 %RH step (0 to 200 = 0 to 100 %RH) */
+    function humidity(octetHumidityValue) {
+        if (octetHumidityValue >= 255) { return "Error" }
+        else { return { "value": octetHumidityValue / 2, "unit": "%RH" } }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Status                                                              */
+    /* ------------------------------------------------------------------ */
+
+    function okError(octetOk) {
+        var message_name = ["ok", "error"]
+        return message_name[octetOk];
+    }
+
+    function remainingProductLifetime(octetMonths) {
+        return { "value": octetMonths, "unit": "month" };
+    }
+
+    function antiTearStatus(octetAntiTear) {
+        var message_name = ["not detected", "detected", "just removed from the base", "just installed on the base",
+            "never detected", "Reserved", "Reserved", "Reserved"]
+        return message_name[octetAntiTear];
+    }
+
+    function batteryLevel(octetBatteryLevel) {
+        var message_name = ["high", "medium", "low", "critical"]
+        return message_name[octetBatteryLevel];
+    }
+
+    /* 5 mV step, 2000 mV offset */
+    function batteryVoltage(octetBatteryVoltage) {
+        return { "value": (octetBatteryVoltage * 5) + 2000, "unit": "mV" };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Configuration                                                       */
+    /* ------------------------------------------------------------------ */
+
+    function reconfigurationSource(octetReconfigurationSource) {
+        if (octetReconfigurationSource == 0) { return "nfc" }
+        if (octetReconfigurationSource == 1) { return "downlink" }
+        if (octetReconfigurationSource == 2) { return "start up" }
+        if (octetReconfigurationSource == 5) { return "local" }
+        else { return "Reserved" }
+    }
+
+    function reconfigurationState(octetReconfigurationState) {
+        var message_name = ["total success", "partial success", "total failure", "Reserved"]
+        return message_name[octetReconfigurationState];
+    }
+
+    function active(octetActive) {
+        var message_name = ["off", "on"]
+        return message_name[octetActive];
+    }
+
+    function pendingJoin(octetPending) {
+        var message_name = ["no join programmed", "join programmed"]
+        return message_name[octetPending];
+    }
+
+    function nfcStatus(octetNfcStatus) {
+        var message_name = ["discoverable", "no discoverable", "Reserved", "Reserved"]
+        return message_name[octetNfcStatus];
+    }
+
+    /* Datalog: 10 minutes step */
+    function transmissionPeriodHistorical(octetPeriodHistorical) {
+        return { "value": octetPeriodHistorical * 10, "unit": "minutes" };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Alarm                                                               */
+    /* ------------------------------------------------------------------ */
+
+    function smokeAlarm(octetAlarm) {
+        var message_name = ["no smoke detected", "smoke detected", "repeated alarm", "Reserved"]
+        return message_name[octetAlarm];
+    }
+
+    function smokeAlarmHush(octetHush) {
+        var message_name = ["stopped, no more smoke", "stopped by the main button",
+            "stopped by all the smoke-detecting products", "Reserved"]
+        return message_name[octetHush];
+    }
+
+    function productTest(octetTest) {
+        var message_name = ["none", "local", "remote", "Reserved"]
+        return message_name[octetTest];
+    }
+
+    function trueFalse(octetTrue) {
+        var message_name = ["false", "true"]
+        return message_name[octetTrue];
+    }
+
+    function weeks(octetWeeks) {
+        return { "value": octetWeeks, "unit": "weeks" };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 0x00 - Product status                                               */
+    /* ------------------------------------------------------------------ */
+
+    function productStatusDataOutput() {
+        var data_hw_version = bitsValue(16, 8);
+        var data_sw_version = bitsValue(24, 8);
+        var data_remaining_lifetime = bitsValue(32, 8);
+        var data_smoke_sensor = bitsValue(40, 1);
+        var data_temp_hum_sensor = bitsValue(41, 1);
+        var data_anti_tear = bitsValue(43, 3);
+        var data_battery_level = bitsValue(46, 2);
+        var data_battery_voltage = bitsValue(48, 8);
+
+        var data = headerOutput();
+        data.hardwareVersion = data_hw_version;
+        data.softwareVersion = data_sw_version;
+        data.remainingProductLifetime = remainingProductLifetime(data_remaining_lifetime);
+        data.statusSmokeSensor = okError(data_smoke_sensor);
+        data.statusTemperatureHumiditySensor = okError(data_temp_hum_sensor);
+        data.statusAntiTear = antiTearStatus(data_anti_tear);
+        data.batteryLevel = batteryLevel(data_battery_level);
+        data.batteryVoltage = batteryVoltage(data_battery_voltage);
         return data;
     }
 
-    function dailyAirDataOutput(stringHex)
-    {
-        var data_temp_mini = (parseInt(stringHex.substring(4,7),16)>>2)&0x3FF;
-        var data_temp_max = (parseInt(stringHex.substring(6,9),16))&0x3FF;
-        var data_temp_avg = (parseInt(stringHex.substring(9,12),16)>>2)&0x3FF;
-        var data_hum_min = (parseInt(stringHex.substring(11,14),16)>>2)&0xFF;
-        var data_hum_max = (parseInt(stringHex.substring(13,16),16)>>2)&0xFF;
-        var data_hum_avg = (parseInt(stringHex.substring(15,18),16)>>2)&0xFF;
+    /* ------------------------------------------------------------------ */
+    /* 0x01 - Product configuration                                        */
+    /* ------------------------------------------------------------------ */
 
-        data = {"typeOfProduct": typeOfProduct(octetTypeProduit),
-        "typeOfMessage": typeOfMessage(octetTypeMessage),
-        "temperatureMin":temperature(data_temp_mini),
-        "temperatureMax":temperature(data_temp_max),
-        "temperatureAvg":temperature(data_temp_avg),
-        "humidityMin":humidity(data_hum_min),
-        "humidityMax":humidity(data_hum_max),
-        "humidityAvg":humidity(data_hum_avg),
+    function productConfigurationDataOutput() {
+        var data_config_source = bitsValue(16, 3);
+        var data_config_status = bitsValue(19, 2);
+        var data_datalog_temperature_on_off = bitsValue(21, 1);
+        var data_daily_air_on_off = bitsValue(22, 1);
+        var data_pending_join = bitsValue(24, 1);
+        var data_nfc_status = bitsValue(25, 2);
+        var data_datalog_new_measure = bitsValue(31, 6);
+        var data_datalog_repetition = bitsValue(37, 5);
+        var data_datalog_tx_period = bitsValue(42, 8);
+        var data_d2d_network_id = bitsValue(50, 17);
+
+        var data = headerOutput();
+        data.reconfigurationSource = reconfigurationSource(data_config_source);
+        data.reconfigurationStatus = reconfigurationState(data_config_status);
+        data.enableDatalogTemperature = active(data_datalog_temperature_on_off);
+        data.enableDailyAirQuality = active(data_daily_air_on_off);
+        data.pendingJoin = pendingJoin(data_pending_join);
+        data.enableNfcDiscover = nfcStatus(data_nfc_status);
+        data.datalogNewValues = data_datalog_new_measure;
+        data.datalogRepeatValues = data_datalog_repetition;
+        data.periodDatalogTransmission = transmissionPeriodHistorical(data_datalog_tx_period);
+        data.d2dNetworkId = data_d2d_network_id;
+
+        // Downlink FCnt on bits 72-87, only when the frame carries it (11 bytes)
+        if (stringHex.length >= 22) {
+            data.downlinkFcnt = bitsValue(72, 16);
         }
         return data;
     }
 
-    function periodicDataOutput(stringHex)
-    {
-        var data_temp = (parseInt(stringHex.substring(4,7),16)>>2)&0x3FF;
-        var data_hum = (parseInt(stringHex.substring(6,9),16)>>2)&0xFF;
+    /* ------------------------------------------------------------------ */
+    /* 0x02 - Alarm status                                                 */
+    /* ------------------------------------------------------------------ */
 
-        data = {"typeOfProduct": typeOfProduct(octetTypeProduit),
-        "typeOfMessage": typeOfMessage(octetTypeMessage),
-        "temperature":temperature(data_temp),
-        "humidity":humidity(data_hum),
-        }
+    function alarmStatusDataOutput() {
+        var data_smoke_alarm = bitsValue(16, 2);
+        var data_smoke_hush = bitsValue(18, 2);
+        var data_product_test = bitsValue(20, 2);
+        var data_time_since_last_test = bitsValue(22, 8);
+        var data_maintenance = bitsValue(30, 1);
+        var data_time_since_last_maintenance = bitsValue(31, 8);
+        var data_temperature = bitsValue(39, 10);
 
+        var data = headerOutput();
+        data.smokeAlarm = smokeAlarm(data_smoke_alarm);
+        data.smokeAlarmHush = smokeAlarmHush(data_smoke_hush);
+        data.productTest = productTest(data_product_test);
+        data.timeSinceLastTest = weeks(data_time_since_last_test);
+        data.isMaintenanceDone = trueFalse(data_maintenance);
+        data.timeSinceLastMaintenance = weeks(data_time_since_last_maintenance);
+        data.temperature = temperature(data_temperature);
         return data;
     }
 
-    function temperatureHistoricalDataOutput(stringHex)
-    {
+    /* ------------------------------------------------------------------ */
+    /* 0x03 - Daily air quality                                            */
+    /* ------------------------------------------------------------------ */
+
+    function dailyAirQualityDataOutput() {
+        var data_temperature_min = bitsValue(16, 10);
+        var data_temperature_max = bitsValue(26, 10);
+        var data_temperature_avg = bitsValue(36, 10);
+        var data_humidity_min = bitsValue(46, 8);
+        var data_humidity_max = bitsValue(54, 8);
+        var data_humidity_avg = bitsValue(62, 8);
+
+        var data = headerOutput();
+        data.temperatureMin = temperature(data_temperature_min);
+        data.temperatureMax = temperature(data_temperature_max);
+        data.temperatureAvg = temperature(data_temperature_avg);
+        data.humidityMin = humidity(data_humidity_min);
+        data.humidityMax = humidity(data_humidity_max);
+        data.humidityAvg = humidity(data_humidity_avg);
+        return data;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 0x04 - Periodic data (LoRaWAN only)                                 */
+    /* ------------------------------------------------------------------ */
+
+    function periodicDataOutput() {
+        var data_temperature = bitsValue(16, 10);
+        var data_humidity = bitsValue(26, 8);
+
+        var data = headerOutput();
+        data.temperature = temperature(data_temperature);
+        data.humidity = humidity(data_humidity);
+        return data;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* 0x05 - Historical temperature data (LoRaWAN only)                   */
+    /* Measures on 10 bits from bit 36, from the most recent to the oldest */
+    /* ------------------------------------------------------------------ */
+
+    function historicalTemperatureDataOutput() {
+        var data_nombre_mesures = bitsValue(16, 6);
+        var data_time_between_measurement = bitsValue(22, 8);
+        var data_repetition = bitsValue(30, 6);
         var mesure = [];
-        var mesure_array=[]
-        
-        var i = 0;
-        var offset_octet = 0;
 
-        var data_nombre_mesures = (parseInt(stringHex.substring(4,6),16)>>2)&0x3F;
-        var data_time_between_measurement_min = ((parseInt(stringHex.substring(5,8),16)>>2)&0xFF);
-        var data_repetition = (parseInt(stringHex.substring(7,9),16))&0x3F;
-        var binary=hexToBinary(stringHex)
-
-        for(i=0;i<data_nombre_mesures;i++){
-
-            offset_binaire = 36 + (10*i);
-
-            mesure[i]= parseInt(binary.substring(offset_binaire,offset_binaire+10),2);  
-
-            if(mesure[i] === 0x3FF){mesure[i] = 0;}
-            else{
-                
-                mesure[i] = parseFloat(((mesure[i]/10)-30).toFixed(1))
-                
+        for (var i = 0; i < data_nombre_mesures; i++) {
+            var offset_binaire = 36 + (10 * i);
+            if ((offset_binaire + 10) > (stringHex.length * 4)) {
+                warnings.push("Historical data truncated: " + i + " measures decoded, " + data_nombre_mesures + " announced");
+                break;
             }
-
+            mesure.push(historicalTemperature(bitsValue(offset_binaire, 10)));
         }
-       
-        data={ "typeOfProduct": typeOfProduct(octetTypeProduit),
-        "typeOfMessage": typeOfMessage(octetTypeMessage),
-        "datalogNewMeasure": data_nombre_mesures,
-        "transmissionIntervalDatalog":data_time_between_measurement_min,
-        "datalogMeasureRepetition":data_repetition,
-        "temperature":mesure,
-        } 
 
-        return data
-
+        var data = headerOutput();
+        data.newMeasure = data_nombre_mesures;
+        data.periodBetweenMeasure = { "value": data_time_between_measurement, "unit": "minutes" };
+        data.redundancy = data_repetition;
+        data.temperature = { "value": mesure, "unit": "°C" };
+        return data;
     }
-        
+
 } // end of decoder
+
+/* -------------------------------------------------------------------------
+ * Legacy entry points (no errors/warnings channel: invalid input returns the errors object).
+ * ---------------------------------------------------------------------- */
+
+// ChirpStack v3
+function Decode(fPort, bytes, variables) {
+    var result = decodeUplink({ "bytes": bytes, "fPort": fPort });
+    return result.data !== undefined ? result.data : { "errors": result.errors };
+}
+
+// The Things Network v2
+function Decoder(bytes, port) {
+    return Decode(port, bytes);
+}
+
+/* Optional export for Node.js / unit tests, ignored by LoRaWAN network servers */
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { decodeUplink: decodeUplink, Decode: Decode, Decoder: Decoder };
+}
