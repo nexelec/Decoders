@@ -1,0 +1,1121 @@
+[
+  {
+    "type": "uplink",
+    "description": "P1 — Periodic data — VISTA SPACE, occupied meeting room: 350 lux, activity index 42 %, presence",
+    "input": {
+      "bytes": [
+        218,
+        16,
+        17,
+        138,
+        160
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA SPACE",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "luminosity": {
+          "value": 350,
+          "unit": "lux"
+        },
+        "activityIndex": {
+          "value": 42,
+          "unit": "%"
+        },
+        "presence": "presence"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "P2 — Periodic data — VISTA FEEL, 21.4 °C, 45.2 %RH",
+    "input": {
+      "bytes": [
+        215,
+        16,
+        128,
+        156,
+        64
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA FEEL",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": 21.4,
+          "unit": "°C"
+        },
+        "humidity": {
+          "value": 45.2,
+          "unit": "%RH"
+        }
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "P3 — Periodic data — VISTA MOVE, empty office at night: 18.6 °C, 48 %RH, 0 lux, no activity, absence",
+    "input": {
+      "bytes": [
+        216,
+        16,
+        121,
+        158,
+        0,
+        0,
+        0
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": 18.6,
+          "unit": "°C"
+        },
+        "humidity": {
+          "value": 48,
+          "unit": "%RH"
+        },
+        "luminosity": {
+          "value": 0,
+          "unit": "lux"
+        },
+        "activityIndex": {
+          "value": 0,
+          "unit": "%"
+        },
+        "presence": "absent"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "P4 — Periodic data — VISTA WAVE, classroom in use: 23 °C, 51.5 %RH, 1245 ppm CO2, 600 lux, activity 67 %, presence",
+    "input": {
+      "bytes": [
+        217,
+        16,
+        132,
+        160,
+        49,
+        55,
+        71,
+        132,
+        56
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA WAVE",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": 23,
+          "unit": "°C"
+        },
+        "humidity": {
+          "value": 51.5,
+          "unit": "%RH"
+        },
+        "co2": {
+          "value": 1245,
+          "unit": "ppm"
+        },
+        "luminosity": {
+          "value": 600,
+          "unit": "lux"
+        },
+        "activityIndex": {
+          "value": 67,
+          "unit": "%"
+        },
+        "presence": "presence"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "P5 — Periodic data — VISTA RISE, 19.8 °C, 40.3 %RH, 612 ppm CO2",
+    "input": {
+      "bytes": [
+        219,
+        16,
+        124,
+        153,
+        48,
+        153,
+        0
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA RISE",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": 19.8,
+          "unit": "°C"
+        },
+        "humidity": {
+          "value": 40.3,
+          "unit": "%RH"
+        },
+        "co2": {
+          "value": 612,
+          "unit": "ppm"
+        }
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "P6 — Periodic data — VISTA WAVE, CO2 sensor at end of life (16380), motion sensor disabled (activity index 125)",
+    "input": {
+      "bytes": [
+        217,
+        16,
+        131,
+        91,
+        143,
+        255,
+        5,
+        71,
+        208
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA WAVE",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": 22.5,
+          "unit": "°C"
+        },
+        "humidity": {
+          "value": 44,
+          "unit": "%RH"
+        },
+        "co2": "end of life sensor",
+        "luminosity": {
+          "value": 420,
+          "unit": "lux"
+        },
+        "activityIndex": "desactivated sensor",
+        "presence": "absent"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "P7 — Periodic data — VISTA FEEL, sub-zero temperature (-4.5 °C, unheated storage), humidity sensor error (1023)",
+    "input": {
+      "bytes": [
+        215,
+        16,
+        63,
+        255,
+        240
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA FEEL",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": -4.5,
+          "unit": "°C"
+        },
+        "humidity": "error"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "H1 — CO2 historical data — VISTA WAVE, 12 CO2 measures every 30 min (4 new values × 3 repetitions), most recent first",
+    "input": {
+      "bytes": [
+        217,
+        32,
+        48,
+        12,
+        51,
+        176,
+        221,
+        51,
+        11,
+        194,
+        176,
+        158,
+        36,
+        8,
+        49,
+        224,
+        112,
+        26,
+        134,
+        80
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA WAVE",
+        "typeOfMessage": "CO2 Historical Data",
+        "versionOfMessage": 0,
+        "newMeasure": 12,
+        "periodBetweenMeasure": {
+          "value": 30,
+          "unit": "minutes"
+        },
+        "redundancy": 3,
+        "co2": {
+          "value": [
+            1180,
+            1105,
+            1020,
+            940,
+            860,
+            790,
+            720,
+            655,
+            600,
+            560,
+            530,
+            505
+          ],
+          "unit": "ppm"
+        }
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "H2 — Temperature historical data — VISTA RISE, 6 temperatures every 60 min (3 new values × 2 repetitions)",
+    "input": {
+      "bytes": [
+        219,
+        48,
+        24,
+        24,
+        39,
+        225,
+        250,
+        127,
+        95,
+        247,
+        249,
+        252
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA RISE",
+        "typeOfMessage": "Temperature Historical Data",
+        "versionOfMessage": 0,
+        "newMeasure": 6,
+        "periodBetweenMeasure": {
+          "value": 60,
+          "unit": "minutes"
+        },
+        "redundancy": 2,
+        "temperature": {
+          "value": [
+            20.4,
+            20.6,
+            20.9,
+            21.1,
+            21,
+            20.8
+          ],
+          "unit": "°C"
+        }
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "H3 — Humidity historical data — VISTA MOVE, 4 humidity measures every 20 min, one measure in error (1023)",
+    "input": {
+      "bytes": [
+        216,
+        64,
+        16,
+        8,
+        24,
+        51,
+        255,
+        127,
+        159,
+        160
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Humidity Historical Data",
+        "versionOfMessage": 0,
+        "newMeasure": 4,
+        "periodBetweenMeasure": {
+          "value": 20,
+          "unit": "minutes"
+        },
+        "redundancy": 1,
+        "humidity": {
+          "value": [
+            52.4,
+            "error",
+            51,
+            50.6
+          ],
+          "unit": "%RH"
+        }
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "H4 — Temperature historical data — VISTA FEEL, 4 temperatures every 10 min, no repetition",
+    "input": {
+      "bytes": [
+        215,
+        48,
+        16,
+        4,
+        24,
+        6,
+        0,
+        128,
+        31,
+        224
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA FEEL",
+        "typeOfMessage": "Temperature Historical Data",
+        "versionOfMessage": 0,
+        "newMeasure": 4,
+        "periodBetweenMeasure": {
+          "value": 10,
+          "unit": "minutes"
+        },
+        "redundancy": 1,
+        "temperature": {
+          "value": [
+            21.3,
+            21.2,
+            21.2,
+            21
+          ],
+          "unit": "°C"
+        }
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "S1 — Product status — VISTA WAVE, battery high (3600 mV), hardware OK, 14 months of activity, CO2 calibrated 30 days ago, on its base",
+    "input": {
+      "bytes": [
+        217,
+        80,
+        5,
+        123,
+        180,
+        0,
+        14,
+        30,
+        89,
+        0,
+        192
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA WAVE",
+        "typeOfMessage": "Product Status",
+        "versionOfMessage": 0,
+        "hardwareVersion": 5,
+        "softwareVersion": 123,
+        "batteryVoltage": {
+          "value": 3600,
+          "unit": "mV"
+        },
+        "batteryLevel": "high",
+        "statusProduct": "ok",
+        "timeActivation": {
+          "value": 14,
+          "unit": "month"
+        },
+        "timeCo2LastCalibration": {
+          "value": 30,
+          "unit": "days"
+        },
+        "statusAntiTear": "detected",
+        "lowBatterieThreshold": {
+          "value": 2500,
+          "unit": "mV"
+        },
+        "bootloaderVersion": 3
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "S2 — Product status — VISTA SPACE, just removed from its base, battery medium (3300 mV), no CO2 sensor (calibration time 255)",
+    "input": {
+      "bytes": [
+        218,
+        80,
+        5,
+        121,
+        165,
+        8,
+        3,
+        255,
+        153,
+        0,
+        192
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA SPACE",
+        "typeOfMessage": "Product Status",
+        "versionOfMessage": 0,
+        "hardwareVersion": 5,
+        "softwareVersion": 121,
+        "batteryVoltage": {
+          "value": 3300,
+          "unit": "mV"
+        },
+        "batteryLevel": "medium",
+        "statusProduct": "ok",
+        "timeActivation": {
+          "value": 3,
+          "unit": "month"
+        },
+        "timeCo2LastCalibration": "error",
+        "statusAntiTear": "just removed from the base",
+        "lowBatterieThreshold": {
+          "value": 2500,
+          "unit": "mV"
+        },
+        "bootloaderVersion": 3
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "S3 — Product status — VISTA FEEL, hardware fault, battery critical (2450 mV), base never detected",
+    "input": {
+      "bytes": [
+        215,
+        80,
+        4,
+        110,
+        122,
+        156,
+        61,
+        255,
+        27,
+        128,
+        128
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA FEEL",
+        "typeOfMessage": "Product Status",
+        "versionOfMessage": 0,
+        "hardwareVersion": 4,
+        "softwareVersion": 110,
+        "batteryVoltage": {
+          "value": 2450,
+          "unit": "mV"
+        },
+        "batteryLevel": "critical",
+        "statusProduct": "error",
+        "timeActivation": {
+          "value": 61,
+          "unit": "month"
+        },
+        "timeCo2LastCalibration": "error",
+        "statusAntiTear": "not detected",
+        "lowBatterieThreshold": {
+          "value": 2550,
+          "unit": "mV"
+        },
+        "bootloaderVersion": 2
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "C1 — Product configuration — VISTA SPACE, start-up, PIR on, periodic data every 10 min, presence alert after 15 min without motion",
+    "input": {
+      "bytes": [
+        218,
+        96,
+        68,
+        50,
+        128,
+        0,
+        4,
+        240
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA SPACE",
+        "typeOfMessage": "Product Configuration",
+        "versionOfMessage": 0,
+        "reconfigurationSource": "start up",
+        "reconfigurationStatus": "total success",
+        "enableMotion": "on",
+        "protocolAndRegion": "LR-EU868",
+        "enablePeriodicData": "on",
+        "periodPeriodicTransmission": {
+          "value": 10,
+          "unit": "minutes"
+        },
+        "pendingJoin": "no join programmed",
+        "enableNfcDiscover": "discoverable",
+        "downlinkFcnt": 0,
+        "enableRoomPresence": "on",
+        "periodWithoutMotion": {
+          "value": 15,
+          "unit": "minutes"
+        },
+        "enableFuota": "off",
+        "isFuotaPending": "false"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "C2 — Product configuration — VISTA FEEL, reconfigured by downlink FCnt 27, partial success, delta 0.5 °C, temperature and humidity datalog (6 × 3, every 60 min), join programmed, NFC not discoverable",
+    "input": {
+      "bytes": [
+        215,
+        96,
+        40,
+        103,
+        133,
+        140,
+        48,
+        107,
+        0,
+        27,
+        0
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA FEEL",
+        "typeOfMessage": "Product Configuration",
+        "versionOfMessage": 0,
+        "reconfigurationSource": "downlink",
+        "reconfigurationStatus": "partial success",
+        "protocolAndRegion": "LR-EU868",
+        "enablePeriodicData": "on",
+        "periodPeriodicTransmission": {
+          "value": 15,
+          "unit": "minutes"
+        },
+        "deltaTemperature": {
+          "value": 0.5,
+          "unit": "°C"
+        },
+        "enableDatalogTemperature": "on",
+        "enableDatalogHumidity": "on",
+        "datalogNewValues": 6,
+        "datalogRepeatValues": 3,
+        "periodDatalogTransmission": {
+          "value": 60,
+          "unit": "minutes"
+        },
+        "pendingJoin": "join programmed",
+        "enableNfcDiscover": "no discoverable",
+        "downlinkFcnt": 27,
+        "enableFuota": "off",
+        "isFuotaPending": "false"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "C3 — Product configuration — VISTA MOVE, reconfigured by NFC, delta temperature disabled, temperature datalog only, presence alert after 30 min, FUOTA activation scheduled",
+    "input": {
+      "bytes": [
+        216,
+        96,
+        4,
+        50,
+        191,
+        196,
+        16,
+        96,
+        0,
+        0,
+        94,
+        64
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Product Configuration",
+        "versionOfMessage": 0,
+        "reconfigurationSource": "nfc",
+        "reconfigurationStatus": "total success",
+        "enableMotion": "on",
+        "protocolAndRegion": "LR-EU868",
+        "enablePeriodicData": "on",
+        "periodPeriodicTransmission": {
+          "value": 10,
+          "unit": "minutes"
+        },
+        "deltaTemperature": "desactivated",
+        "enableDatalogTemperature": "on",
+        "enableDatalogHumidity": "off",
+        "datalogNewValues": 4,
+        "datalogRepeatValues": 2,
+        "periodDatalogTransmission": {
+          "value": 120,
+          "unit": "minutes"
+        },
+        "pendingJoin": "no join programmed",
+        "enableNfcDiscover": "discoverable",
+        "downlinkFcnt": 0,
+        "enableRoomPresence": "on",
+        "periodWithoutMotion": {
+          "value": 30,
+          "unit": "minutes"
+        },
+        "enableFuota": "off",
+        "isFuotaPending": "true"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "C4 — Product configuration — VISTA WAVE, weekly periodic configuration, CO2 thresholds 800 / 1400 ppm, delta CO2 100 ppm, CO2 and temperature datalog (12 × 3, every 6 h), FUOTA in progress",
+    "input": {
+      "bytes": [
+        217,
+        96,
+        167,
+        40,
+        17,
+        140,
+        50,
+        134,
+        127,
+        230,
+        12,
+        144,
+        0,
+        28,
+        10,
+        64
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA WAVE",
+        "typeOfMessage": "Product Configuration",
+        "versionOfMessage": 0,
+        "reconfigurationSource": "periodic",
+        "reconfigurationStatus": "total success",
+        "enableCo2": "on",
+        "enableMotion": "on",
+        "enableAutomaticCo2Calibration": "on",
+        "thresholdCo2Medium": {
+          "value": 800,
+          "unit": "ppm"
+        },
+        "thresholdCo2High": {
+          "value": 1400,
+          "unit": "ppm"
+        },
+        "enableLedCo2": "on",
+        "enableLedMediumLevel": "on",
+        "protocolAndRegion": "LR-EU868",
+        "enablePeriodicData": "on",
+        "periodPeriodicTransmission": {
+          "value": 10,
+          "unit": "minutes"
+        },
+        "deltaCo2": {
+          "value": 100,
+          "unit": "ppm"
+        },
+        "deltaTemperature": "desactivated",
+        "enableDatalogCo2": "on",
+        "enableDatalogTemperature": "on",
+        "enableDatalogHumidity": "off",
+        "datalogNewValues": 12,
+        "datalogRepeatValues": 3,
+        "periodDatalogTransmission": {
+          "value": 360,
+          "unit": "minutes"
+        },
+        "pendingJoin": "no join programmed",
+        "enableNfcDiscover": "discoverable",
+        "downlinkFcnt": 112,
+        "enableRoomPresence": "off",
+        "periodWithoutMotion": {
+          "value": 20,
+          "unit": "minutes"
+        },
+        "enableFuota": "on",
+        "isFuotaPending": "false"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "C5 — Product configuration — VISTA RISE, reconfigured by downlink FCnt 5, automatic calibration off, thresholds 1000 / 1600 ppm, orange LED off, delta CO2 disabled, delta 1 °C",
+    "input": {
+      "bytes": [
+        219,
+        96,
+        36,
+        100,
+        40,
+        16,
+        106,
+        127,
+        138,
+        134,
+        16,
+        48,
+        0,
+        2,
+        128
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA RISE",
+        "typeOfMessage": "Product Configuration",
+        "versionOfMessage": 0,
+        "reconfigurationSource": "downlink",
+        "reconfigurationStatus": "total success",
+        "enableCo2": "on",
+        "enableAutomaticCo2Calibration": "off",
+        "thresholdCo2Medium": {
+          "value": 1000,
+          "unit": "ppm"
+        },
+        "thresholdCo2High": {
+          "value": 1600,
+          "unit": "ppm"
+        },
+        "enableLedCo2": "on",
+        "enableLedMediumLevel": "off",
+        "protocolAndRegion": "LR-EU868",
+        "enablePeriodicData": "on",
+        "periodPeriodicTransmission": {
+          "value": 20,
+          "unit": "minutes"
+        },
+        "deltaCo2": "desactivated",
+        "deltaTemperature": {
+          "value": 1,
+          "unit": "°C"
+        },
+        "enableDatalogCo2": "on",
+        "enableDatalogTemperature": "off",
+        "enableDatalogHumidity": "off",
+        "datalogNewValues": 6,
+        "datalogRepeatValues": 2,
+        "periodDatalogTransmission": {
+          "value": 60,
+          "unit": "minutes"
+        },
+        "pendingJoin": "no join programmed",
+        "enableNfcDiscover": "discoverable",
+        "downlinkFcnt": 5,
+        "enableFuota": "off",
+        "isFuotaPending": "false"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "A1 — Presence alert — VISTA SPACE, room vacant (no motion for the configured period)",
+    "input": {
+      "bytes": [
+        218,
+        112,
+        128
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA SPACE",
+        "typeOfMessage": "Presence Alert",
+        "versionOfMessage": 0,
+        "presence": "absent"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "A2 — Presence alert — VISTA MOVE, room occupied again",
+    "input": {
+      "bytes": [
+        216,
+        112,
+        0
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Presence Alert",
+        "versionOfMessage": 0,
+        "presence": "presence"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "R1 — Reserved message type — VISTA WAVE, reserved message type 0x8: only the product and \"Reserved\" are returned",
+    "input": {
+      "bytes": [
+        217,
+        128
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA WAVE",
+        "typeOfMessage": "Reserved"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "M1 — Captured frame — Periodic data — VISTA MOVE, 21.7 °C, 44.1 %RH, 2645 lux, no activity, absence",
+    "input": {
+      "bytes": [
+        216,
+        16,
+        129,
+        91,
+        152,
+        68,
+        0
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Periodic Data",
+        "versionOfMessage": 0,
+        "temperature": {
+          "value": 21.7,
+          "unit": "°C"
+        },
+        "humidity": {
+          "value": 44.1,
+          "unit": "%RH"
+        },
+        "luminosity": {
+          "value": 2645,
+          "unit": "lux"
+        },
+        "activityIndex": {
+          "value": 0,
+          "unit": "%"
+        },
+        "presence": "absent"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "M2 — Captured frame — Presence alert — VISTA MOVE, room vacant",
+    "input": {
+      "bytes": [
+        216,
+        112,
+        128
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Presence Alert",
+        "versionOfMessage": 0,
+        "presence": "absent"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "M3 — Captured frame — Product configuration — VISTA MOVE, reconfigured by downlink FCnt 23, periodic data every 10 min, delta 0.5 °C, datalog off, presence alert after 5 min",
+    "input": {
+      "bytes": [
+        216,
+        96,
+        36,
+        50,
+        130,
+        134,
+        24,
+        144,
+        0,
+        11,
+        197,
+        0
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Product Configuration",
+        "versionOfMessage": 0,
+        "reconfigurationSource": "downlink",
+        "reconfigurationStatus": "total success",
+        "enableMotion": "on",
+        "protocolAndRegion": "LR-EU868",
+        "enablePeriodicData": "on",
+        "periodPeriodicTransmission": {
+          "value": 10,
+          "unit": "minutes"
+        },
+        "deltaTemperature": {
+          "value": 0.5,
+          "unit": "°C"
+        },
+        "enableDatalogTemperature": "off",
+        "enableDatalogHumidity": "off",
+        "datalogNewValues": 6,
+        "datalogRepeatValues": 3,
+        "periodDatalogTransmission": {
+          "value": 180,
+          "unit": "minutes"
+        },
+        "pendingJoin": "no join programmed",
+        "enableNfcDiscover": "discoverable",
+        "downlinkFcnt": 23,
+        "enableRoomPresence": "on",
+        "periodWithoutMotion": {
+          "value": 5,
+          "unit": "minutes"
+        },
+        "enableFuota": "off",
+        "isFuotaPending": "false"
+      }
+    }
+  },
+  {
+    "type": "uplink",
+    "description": "M4 — Captured frame — Product status — VISTA MOVE, hardware 1, software 11, battery high (2980 mV), just removed from its base, bootloader 22",
+    "input": {
+      "bytes": [
+        216,
+        80,
+        1,
+        11,
+        149,
+        0,
+        0,
+        255,
+        153,
+        5,
+        128
+      ],
+      "fPort": 56,
+      "recvTime": "2026-11-13T10:00:00.000+01:00"
+    },
+    "output": {
+      "data": {
+        "typeOfProduct": "VISTA MOVE",
+        "typeOfMessage": "Product Status",
+        "versionOfMessage": 0,
+        "hardwareVersion": 1,
+        "softwareVersion": 11,
+        "batteryVoltage": {
+          "value": 2980,
+          "unit": "mV"
+        },
+        "batteryLevel": "high",
+        "statusProduct": "ok",
+        "timeActivation": {
+          "value": 0,
+          "unit": "month"
+        },
+        "timeCo2LastCalibration": "error",
+        "statusAntiTear": "just removed from the base",
+        "lowBatterieThreshold": {
+          "value": 2500,
+          "unit": "mV"
+        },
+        "bootloaderVersion": 22
+      }
+    }
+  }
+]

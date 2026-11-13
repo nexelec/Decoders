@@ -65,6 +65,9 @@ Changes that alter the output of a decoder are marked **⚠ Output change** belo
 
 ## X4 — VISTA SPACE / FEEL / MOVE / WAVE / RISE
 
+### Examples — 2026-11-13
+- New `examples.json` (LoRa Alliance TS013 format) and `README-Examples_VISTA.md`: 22 synthetic uplinks built from `README-Frames_VISTA.md` (guide D1196A), covering every frame type for each product that sends it, sensor error codes and a reserved message type, plus 4 frames captured on a VISTA MOVE (periodic data, presence alert, configuration, status). No decoder change.
+
 ### `decoderVista.js` 1.0.0 — 2026-10-23
 - First decoder, technical guide D1196A (21/10/2026), port 56: periodic data, CO2 / temperature / humidity historical data, product status, product configuration (one layout per product) and presence alert.
 - Output field names follow the FLOW and X2 decoders (`statusProduct`, `timeActivation`, `downlinkFcnt`, `enableFuota`, `isFuotaPending`, `bootloaderVersion`…).
